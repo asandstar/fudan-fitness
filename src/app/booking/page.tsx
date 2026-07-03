@@ -52,11 +52,13 @@ function BookingInner() {
 
   const days = useMemo(() => getNextNDays(7), []);
 
-  // 从 URL 预选场馆
+  // 从 URL 预选场馆和教练
   useEffect(() => {
     const v = searchParams.get('venue');
     if (v && venues.some((x) => x.id === v && x.bookable)) setVenueId(v);
-  }, [searchParams, venues]);
+    const c = searchParams.get('coach');
+    if (c && coaches.some((x) => x.id === c)) setCoachId(c);
+  }, [searchParams, venues, coaches]);
 
   // 登录检查
   useEffect(() => {
