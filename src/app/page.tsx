@@ -2,6 +2,7 @@
 
 // 首页 — 10 个模块
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import {
   ArrowRight, Dumbbell, Users, Clock, Shield, Heart, Sparkles,
@@ -53,6 +54,11 @@ const RULES = [
 export default function HomePage() {
   const { venues, coaches, announcements, currentUser } = useApp();
   const [coachFilter, setCoachFilter] = useState<typeof COACH_FILTERS[number]['key']>('all');
+  const router = useRouter();
+
+  const handleBookCoach = (coachId: string) => {
+    router.push(`/booking?coach=${coachId}`);
+  };
 
   const bookableVenues = useMemo(() => venues.filter((v) => v.bookable).sort((a, b) => a.displayOrder - b.displayOrder), [venues]);
   const displayVenues = useMemo(() => venues.slice().sort((a, b) => a.displayOrder - b.displayOrder), [venues]);
@@ -176,7 +182,7 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredCoaches.slice(0, 6).map((c) => (
-            <CoachCard key={c.id} coach={c} onBook={() => {}} />
+            <CoachCard key={c.id} coach={c} onBook={handleBookCoach} />
           ))}
         </div>
         {filteredCoaches.length === 0 && (
