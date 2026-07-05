@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>复旦健身社互助预约平台 · TRAE 创意展示</title>
+<style>
+  :root {
+    --color-primary: #4ECDC4;
+    --color-primary-light: #7EDDD6;
+    --color-primary-dark: #3BB8B0;
+    --color-primary-50: rgba(78, 205, 196, 0.08);
+    --color-primary-100: rgba(78, 205, 196, 0.15);
+
+    --color-accent: #FF8A80;
+    --color-accent-light: rgba(255, 138, 128, 0.15);
+    --color-success: #A8E6CF;
+    --color-info: #81D4FA;
+    --color-warning: #FFD93D;
+    --color-danger: #FF8A80;
+
+    --color-bg: #F5F5F0;
+    --color-bg-warm: #FAF9F6;
+    --color-surface: #FFFFFF;
+
+    --color-text-primary: #2D3436;
+    --color-text-secondary: #636E72;
+    --color-text-tertiary: #B2BEC3;
+
+    --color-border: #DFE6E9;
+    --color-border-light: #E8ECEF;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.10);
+
+    --content-max-width: 1100px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: 'PingFang SC', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .container {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ============ Hero ============ */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #2D3436 0%, #1a1d1f 100%);
+    color: #fff;
+    padding: 80px 0 100px;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(78, 205, 196, 0.25) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(255, 138, 128, 0.18) 0%, transparent 50%);
+  }
+
+  .hero-content { position: relative; z-index: 1; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    background: rgba(78, 205, 196, 0.2);
+    color: var(--color-primary-light);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-size: 44px;
+    font-weight: 700;
+    margin: 0 0 16px;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+  }
+
+  .hero h1 .accent { color: var(--color-primary-light); }
+
+  .hero .subtitle {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.78);
+    margin: 0 0 32px;
+    max-width: 640px;
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 32px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(78, 205, 196, 0.4);
+  }
+
+  .hero-cta:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+  }
+
+  .hero-cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 15px;
+    margin-left: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.2s;
+  }
+
+  .hero-cta-secondary:hover { background: rgba(255, 255, 255, 0.15); }
+
+  /* ============ Section ============ */
+  section { padding: 80px 0; }
+
+  section.warm { background: var(--color-bg-warm); }
+
+  .section-title {
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--color-text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  .section-subtitle {
+    color: var(--color-text-secondary);
+    margin: 0 0 40px;
+    font-size: 15px;
+  }
+
+  .section-num {
+    display: inline-block;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    color: var(--color-primary);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  /* ============ Demo 简介 ============ */
+  .intro-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .intro-card {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 28px 24px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-light);
+    transition: all 0.3s;
+  }
+
+  .intro-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
+  }
+
+  .intro-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 22px;
+  }
+
+  .intro-card.accent .intro-icon {
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+  }
+
+  .intro-card h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .intro-card p {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.65;
+  }
+
+  .feature-showcase {
+    background: var(--color-surface);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .feature-showcase h3 {
+    font-size: 18px;
+    margin: 0 0 20px;
+    color: var(--color-text-primary);
+  }
+
+  .feature-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    background: var(--color-bg-warm);
+    border-radius: 8px;
+    border-left: 3px solid var(--color-primary);
+  }
+
+  .feature-item .icon {
+    color: var(--color-primary);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .feature-item .text strong {
+    display: block;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+  }
+
+  .feature-item .text span {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+
+  /* ============ 创作思路 ============ */
+  .idea-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+
+  .idea-card {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: var(--shadow-md);
+    border-top: 3px solid var(--color-primary);
+  }
+
+  .idea-card.accent { border-top-color: var(--color-accent); }
+  .idea-card.info { border-top-color: var(--color-info); }
+
+  .idea-card .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .idea-card.accent .label { color: var(--color-accent); }
+  .idea-card.info .label { color: var(--color-info); }
+
+  .idea-card h3 {
+    font-size: 18px;
+    margin: 0 0 12px;
+  }
+
+  .idea-card p {
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* ============ 体验地址 ============ */
+  .demo-box {
+    background: linear-gradient(135deg, #4ECDC4 0%, #3BB8B0 100%);
+    border-radius: 20px;
+    padding: 48px;
+    color: #fff;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(78, 205, 196, 0.3);
+  }
+
+  .demo-box h2 {
+    font-size: 28px;
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+
+  .demo-box p {
+    font-size: 15px;
+    opacity: 0.9;
+    margin: 0 0 24px;
+  }
+
+  .demo-url {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 15px;
+    margin-bottom: 24px;
+    color: #fff;
+    transition: all 0.2s;
+  }
+
+  .demo-url:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .demo-accounts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 32px;
+    text-align: left;
+  }
+
+  .account {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .account .role {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+    margin-bottom: 4px;
+  }
+
+  .account .name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .account .desc {
+    font-size: 12px;
+    opacity: 0.85;
+    line-height: 1.5;
+  }
+
+  /* ============ TRAE 实践 ============ */
+  .trae-timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+
+  .trae-timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--color-primary), var(--color-primary-light));
+  }
+
+  .trae-step {
+    position: relative;
+    padding-bottom: 32px;
+  }
+
+  .trae-step:last-child { padding-bottom: 0; }
+
+  .trae-step::before {
+    content: '';
+    position: absolute;
+    left: -32px;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    border: 4px solid var(--color-bg);
+    box-shadow: 0 0 0 2px var(--color-primary);
+  }
+
+  .trae-step .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .trae-step .step-num {
+    font-family: 'SF Mono', monospace;
+    font-size: 12px;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  .trae-step h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .trae-step .step-content {
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .trae-step .step-meta {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 10px;
+    background: var(--color-primary-50);
+    color: var(--color-primary-dark);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* ============ Session ID ============ */
+  .sessions {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-light);
+    margin-top: 32px;
+  }
+
+  .sessions h4 {
+    margin: 0 0 16px;
+    font-size: 15px;
+    color: var(--color-text-primary);
+  }
+
+  .session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .session-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--color-bg-warm);
+    border-radius: 8px;
+    border-left: 3px solid var(--color-primary);
+  }
+
+  .session-id {
+    font-family: 'SF Mono', monospace;
+    font-size: 13px;
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .session-desc {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+
+  /* ============ 技术栈 ============ */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .tech-item {
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-light);
+    transition: all 0.2s;
+  }
+
+  .tech-item:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+
+  .tech-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .tech-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .tech-desc {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+  }
+
+  /* ============ 数据展示 ============ */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  .stat {
+    text-align: center;
+    padding: 24px 16px;
+    background: var(--color-surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .stat-num {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-primary);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+
+  /* ============ Footer ============ */
+  footer {
+    background: #2D3436;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 40px 0;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  footer a {
+    color: var(--color-primary-light);
+  }
+
+  /* ============ 响应式 ============ */
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 32px; }
+    .hero .subtitle { font-size: 16px; }
+    .hero-cta, .hero-cta-secondary {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      text-align: center;
+    }
+    .hero-cta-secondary { margin-left: 0; }
+
+    .intro-grid,
+    .idea-grid,
+    .tech-grid,
+    .stats,
+    .demo-accounts {
+      grid-template-columns: 1fr 1fr;
+    }
+    .feature-list { grid-template-columns: 1fr; }
+    .demo-box { padding: 32px 20px; }
+    .demo-box h2 { font-size: 22px; }
+  }
+
+  @media (max-width: 480px) {
+    .intro-grid,
+    .idea-grid,
+    .tech-grid,
+    .stats,
+    .demo-accounts {
+      grid-template-columns: 1fr;
+    }
+    section { padding: 60px 0; }
+    .section-title { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ Hero ============ -->
+<header class="hero">
+  <div class="container hero-content">
+    <span class="badge">★ TRAE AI 创造力大赛参赛作品 · 生活娱乐赛道</span>
+    <h1>复旦健身社<span class="accent">互助预约平台</span></h1>
+    <p class="subtitle">
+      连接学员与认证教练的校园健身互助预约网站。<br>
+      零基础友好、女生友好、信用约束机制，让科学训练触手可及。
+    </p>
+    <div class="hero-meta">
+      <span>🌐 网站平台</span>
+      <span>👥 复旦健身社社员</span>
+      <span>⚙️ Next.js + React + TypeScript</span>
+      <span>🎨 高保真设计还原</span>
+    </div>
+    <div>
+      <a href="https://fudan-fitness.pages.dev/" target="_blank" class="hero-cta">
+        立即体验 Demo →
+      </a>
+      <a href="#trae-process" class="hero-cta-secondary">
+        查看 TRAE 开发过程
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 1. Demo 简介 ============ -->
+<section>
+  <div class="container">
+    <span class="section-num">01 / DEMO 简介</span>
+    <h2 class="section-title">是什么 · 面向谁 · 能做什么</h2>
+    <p class="section-subtitle">基于 Next.js 的校园健身互助预约网站，服务复旦健身社三类核心用户</p>
+
+    <div class="intro-grid">
+      <div class="intro-card">
+        <div class="intro-icon">📋</div>
+        <h3>预约带练</h3>
+        <p>学员选择场馆、时段、教练，填写训练需求并提交预约。支持每周额度、违约禁约、时段冲突三重校验，保障资源合理分配。</p>
+      </div>
+      <div class="intro-card accent">
+        <div class="intro-icon">✅</div>
+        <h3>教练审核</h3>
+        <p>认证教练查看收到的预约，通过/拒绝审核，标记课程完成。教练可自主管理可约时段，12 小时内未审核自动取消。</p>
+      </div>
+      <div class="intro-card">
+        <div class="intro-icon">🛡️</div>
+        <h3>管理后台</h3>
+        <p>管理员审核教练申请、发布公告、查询预约记录、管理黑名单（解除禁约），完整覆盖社团运营全场景。</p>
+      </div>
+    </div>
+
+    <div class="feature-showcase">
+      <h3>核心业务规则（全部实现）</h3>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>每周 3 次预约上限</strong>
+            <span>满额时按钮禁用并提示</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>24 小时取消规则</strong>
+            <span>开课前 24h 可免费取消,之后记违约</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>违约 3 次禁约 30 天</strong>
+            <span>自动触发禁约提示</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>同教练同时段唯一</strong>
+            <span>已约时段不可再次选择</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>预约状态机完整</strong>
+            <span>pending → approved → completed/cancelled</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>新手 / 女生友好标签</strong>
+            <span>降低入门门槛,保护隐私</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. 创作思路 ============ -->
+<section class="warm">
+  <div class="container">
+    <span class="section-num">02 / 创作思路</span>
+    <h2 class="section-title">灵感来源 · 痛点 · 取舍</h2>
+    <p class="section-subtitle">为什么用互助预约模式解决校园健身指导问题</p>
+
+    <div class="idea-grid">
+      <div class="idea-card">
+        <div class="label">💡 灵感来源</div>
+        <h3>来自社团真实痛点</h3>
+        <p>复旦健身社拥有大量优秀健身爱好者，但新社员缺乏科学训练指导，经常因动作不规范导致受伤；同时教练资源分散在微信群、QQ 群中，缺乏统一的预约工具,协调成本高、效率低。</p>
+      </div>
+      <div class="idea-card accent">
+        <div class="label">🎯 想解决的问题</div>
+        <h3>三大真实痛点</h3>
+        <p>① 新社员零基础入门难，不知如何开始训练；<br>② 教练带练时间难协调，缺乏高效预约工具；<br>③ 违约成本低导致教练时间浪费，需要一套信用约束机制促进社区健康发展。</p>
+      </div>
+      <div class="idea-card info">
+        <div class="label">⚖️ 为什么做这个方向</div>
+        <h3>判断与取舍</h3>
+        <p>健身是大学生群体的高频需求,互助模式成本低、可扩展性强,适合社团运营。预约平台能提升训练效率、保障训练安全,同时通过信用机制促进社区健康发展。MVP 优先跑通核心流程,后续可扩展课程包、积分体系等。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. 体验地址 ============ -->
+<section>
+  <div class="container">
+    <span class="section-num">03 / 体验地址</span>
+    <h2 class="section-title">在线 Demo · 一键体验</h2>
+    <p class="section-subtitle">部署在 Cloudflare Pages,永久免费访问</p>
+
+    <div class="demo-box">
+      <h2>🚀 立即体验</h2>
+      <p>点击下方链接进入完整 Demo,支持 4 种角色一键登录</p>
+      <a href="https://fudan-fitness.pages.dev/" target="_blank" class="demo-url">
+        https://fudan-fitness.pages.dev/
+      </a>
+
+      <div class="demo-accounts">
+        <div class="account">
+          <div class="role">👤 学员</div>
+          <div class="name">刘小明</div>
+          <div class="desc">普通社员,已预约 2 次</div>
+        </div>
+        <div class="account">
+          <div class="role">🏃 教练</div>
+          <div class="name">张明</div>
+          <div class="desc">认证教练,有待审核预约</div>
+        </div>
+        <div class="account">
+          <div class="role">🚫 受限学员</div>
+          <div class="name">吴雨桐</div>
+          <div class="desc">被禁约,测试禁约提示</div>
+        </div>
+        <div class="account">
+          <div class="role">🛠️ 管理员</div>
+          <div class="name">平台管理员</div>
+          <div class="desc">后台全部权限</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">6</div>
+        <div class="stat-label">核心页面</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">10+</div>
+        <div class="stat-label">业务规则</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3</div>
+        <div class="stat-label">用户角色</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">7</div>
+        <div class="stat-label">预约状态</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. TRAE 实践过程 ============ -->
+<section class="warm" id="trae-process">
+  <div class="container">
+    <span class="section-num">04 / TRAE 实践过程</span>
+    <h2 class="section-title">完整开发流程 · 9 阶段递进</h2>
+    <p class="section-subtitle">从需求分析到上线部署,全程使用 TRAE 完成</p>
+
+    <div class="trae-timeline">
+      <div class="trae-step">
+        <div class="step-header">
+          <span class="step-num">P0</span>
+          <h4>需求分析与方案设计</h4>
+        </div>
+        <div class="step-content">
+          让 TRAE 读取《复旦健身社互助预约平台-开发交接文档》和 Design 高保真页面,自动生成项目文件结构、实现计划(P0-P9 九个阶段)、核心组件拆分、Mock 数据结构。确认 MVP 技术选型:Next.js 14 + React 18 + TypeScript + Tailwind CSS 3。
+        </div>
+        <span class="step-meta">约 1 小时 · 方案对齐</span>
+      </div>
+
+      <div class="trae-step">
+        <div class="step-header">
+          <span class="step-num">P1</span>
+          <h4>初始化与数据层</h4>
+        </div>
+        <div class="step-content">
+          创建项目骨架,迁移设计 Token,安装依赖。实现 types.ts(全部 TS 类型定义)、constants.ts(业务规则常量)、utils.ts(工具函数)、mock-data.ts(日期动态化 Mock 数据)。TRAE 自动识别文档中的日期过期问题并动态化处理。
+        </div>
+        <span class="step-meta">约 1 小时 · 数据层搭建</span>
+      </div>
+
+      <div class="trae-step">
+        <div class="step-header">
+          <span class="step-num">P2</span>
+          <h4>全局骨架与首页</h4>
+        </div>
+        <div class="step-content">
+          实现 AppContext(全局状态管理)、NavBar、Footer、Modal、状态组件、登录页。完成首页 10 个模块:Hero、校区概览、场馆、教练筛选、新手步骤、友好支持、器材、规则、公告、社团介绍。
+        </div>
+        <span class="step-meta">约 1 小时 · 骨架与首页</span>
+      </div>
+
+      <div class="trae-step">
+        <div class="step-header">
+          <span class="step-num">P3-P4</span>
+          <h4>核心页面开发</h4>
+        </div>
+        <div class="step-content">
+          场馆介绍页(Tab 切换 + 校区筛选 + 3 可约场馆 + 江湾旗舰 + 其他校区)。教练预约页(3 步向导 + 时段网格 + 三重校验 + 防重复提交)。个人中心(用户卡 + 额度进度 + 违约警示 + 预约 Tab + 取消弹窗 24h 分叉)。
+        </div>
+        <span class="step-meta">约 2 小时 · 核心流程</span>
+      </div>
+
+      <div class="trae-step">
+        <div class="step-header">
+          <span class="step-num">P5</span>
+          <h4>教练中心与管理后台</h4>
+        </div>
+        <div class="step-content">
+          教练中心(资料编辑 + 时段管理 + 收到预约审核 + 通过/拒绝/标记完成)。管理员后台(4 Tab:教练审核、公告发布、预约记录、黑名单管理)。完整覆盖社团运营场景。
+        </div>
+        <span class="step-meta">约 1 小时 · 后台开发</span>
+      </div>
+
+      <div class="trae-step">
+        <div class="step-header">
+          <span class="step-num">P6</span>
+          <h4>联调打磨与部署</h4>
+        </div>
+        <div class="step-content">
+          修复 hooks 规则错误、ESLint 配置优化。npm run build 生产构建验证通过(8 个路由全部静态生成)。Cloudflare Pages 部署生成永久公网链接。修复 Hydration 错误(Footer 动态导入)。
+        </div>
+        <span class="step-meta">约 30 分钟 · 上线部署</span>
+      </div>
+    </div>
+
+    <div class="sessions">
+      <h4>🔑 关键任务对话 Session ID(用于证明作品由 TRAE 开发完成)</h4>
+      <div class="session-list">
+        <div class="session-item">
+          <span class="session-id">6a46571efef87617ce722eac</span>
+          <span class="session-desc">完整开发流程(方案设计 + 代码实现 + 联调部署)</span>
+        </div>
+        <div class="session-item">
+          <span class="session-id">6a4630396976432b8b8007f6</span>
+          <span class="session-desc">Design 资产与开发交接文档参考</span>
+        </div>
+        <div class="session-item">
+          <span class="session-id">双击 TRAE 对话即可复制</span>
+          <span class="session-desc">如需更多 Session ID 可提供</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. 技术亮点 ============ -->
+<section>
+  <div class="container">
+    <span class="section-num">05 / 技术亮点</span>
+    <h2 class="section-title">技术栈与工程实践</h2>
+    <p class="section-subtitle">现代前端技术栈,适合学生社团后续维护</p>
+
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="tech-icon">⚡</div>
+        <div class="tech-name">Next.js 14</div>
+        <div class="tech-desc">App Router + 静态导出</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">⚛️</div>
+        <div class="tech-name">React 18</div>
+        <div class="tech-desc">Context + Hooks 状态管理</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🔷</div>
+        <div class="tech-name">TypeScript</div>
+        <div class="tech-desc">完整类型定义</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🎨</div>
+        <div class="tech-name">Tailwind CSS 3</div>
+        <div class="tech-desc">设计 Token 系统</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">☁️</div>
+        <div class="tech-name">Cloudflare Pages</div>
+        <div class="tech-desc">永久免费静态托管</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">📦</div>
+        <div class="tech-name">localStorage</div>
+        <div class="tech-desc">MVP 数据持久化</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🎯</div>
+        <div class="tech-name">lucide-react</div>
+        <div class="tech-desc">统一图标系统</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon">🔧</div>
+        <div class="tech-name">GitHub Actions</div>
+        <div class="tech-desc">CI/CD 自动部署</div>
+      </div>
+    </div>
+
+    <div class="feature-showcase" style="margin-top: 32px;">
+      <h3>🏆 工程亮点</h3>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>纯静态部署</strong>
+            <span>output: 'export',零配置部署任意平台</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>日期动态化</strong>
+            <span>Mock 数据相对今天生成,Demo 时段始终可约</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>三重校验机制</strong>
+            <span>额度 + 禁约 + 冲突,保障资源合理分配</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>完整状态机</strong>
+            <span>7 种预约状态全覆盖,空/成功/错误三态提示</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>响应式布局</strong>
+            <span>桌面 + 移动端适配,汉堡菜单导航</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="icon">✓</span>
+          <div class="text">
+            <strong>社团可维护性</strong>
+            <span>清晰目录结构,类型完整,适合学生接力</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. 报名帖链接 ============ -->
+<section class="warm">
+  <div class="container">
+    <span class="section-num">06 / 报名帖链接</span>
+    <h2 class="section-title">社区报名帖</h2>
+    <p class="section-subtitle">本作品已通过 TRAE AI 创造力大赛初赛报名审核</p>
+
+    <div class="feature-showcase" style="text-align: center; padding: 40px;">
+      <p style="font-size: 16px; color: var(--color-text-secondary); margin: 0 0 16px;">
+        报名帖链接将在初赛专区发帖后补充
+      </p>
+      <p style="font-size: 14px; color: var(--color-text-tertiary); margin: 0;">
+        作品由 TRAE 全程开发完成,所有代码已开源至 GitHub
+      </p>
+      <div style="margin-top: 24px;">
+        <a href="https://github.com/asandstar/fudan-fitness" target="_blank" class="hero-cta" style="background: #2D3436; box-shadow: none;">
+          📦 查看 GitHub 仓库源码
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Footer ============ -->
+<footer>
+  <div class="container">
+    <p>复旦健身社互助预约平台 · TRAE AI 创造力大赛参赛作品</p>
+    <p style="margin-top: 8px; font-size: 12px; opacity: 0.6;">
+      开发工具:TRAE · 技术栈:Next.js + React + TypeScript · 部署:Cloudflare Pages
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
