@@ -1,4 +1,5 @@
-// 空状态
+'use client';
+
 import type { ReactNode } from 'react';
 import { Inbox } from 'lucide-react';
 
@@ -8,18 +9,44 @@ interface EmptyStateProps {
   description?: string;
   actionLabel?: string;
   onAction?: () => void;
+  variant?: 'default' | 'booking' | 'notification' | 'record';
 }
 
-export default function EmptyState({ icon, title, description, actionLabel, onAction }: EmptyStateProps) {
+const variantStyles = {
+  default: 'bg-bg-warm text-text-tertiary',
+  booking: 'bg-primary-50 text-primary',
+  notification: 'bg-info/20 text-info',
+  record: 'bg-accent-light text-accent',
+};
+
+const variantIcons = {
+  default: Inbox,
+  booking: Inbox,
+  notification: Inbox,
+  record: Inbox,
+};
+
+export default function EmptyState({ icon, title, description, actionLabel, onAction, variant = 'default' }: EmptyStateProps) {
+  const Icon = icon ? () => icon : variantIcons[variant];
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <div className="w-16 h-16 rounded-full bg-bg-warm flex items-center justify-center text-text-tertiary mb-4">
-        {icon ?? <Inbox size={28} />}
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in">
+      <div className={`w-20 h-20 rounded-2xl ${variantStyles[variant]} flex items-center justify-center mb-5 animate-slide-up`}>
+        <Icon size={32} />
       </div>
-      <h3 className="font-medium text-text-primary mb-1">{title}</h3>
-      {description && <p className="text-sm text-text-secondary max-w-sm">{description}</p>}
+      <h3 className="font-semibold text-text-primary text-lg mb-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        {title}
+      </h3>
+      {description && (
+        <p className="text-sm text-text-secondary max-w-md leading-relaxed animate-slide-up" style={{ animationDelay: '0.15s' }}>
+          {description}
+        </p>
+      )}
       {actionLabel && onAction && (
-        <button onClick={onAction} className="btn-outline mt-4 text-sm">
+        <button
+          onClick={onAction}
+          className="btn-outline mt-5 text-sm animate-slide-up"
+          style={{ animationDelay: '0.2s' }}
+        >
           {actionLabel}
         </button>
       )}

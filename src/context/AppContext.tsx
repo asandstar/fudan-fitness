@@ -24,6 +24,7 @@ import type {
   BookingDraft,
   CoachProfile,
   CoachSlot,
+  Notification,
   User,
   Venue,
   ViolationRecord,
@@ -46,6 +47,7 @@ interface AppContextValue {
   appointments: Appointment[];
   announcements: Announcement[];
   violations: ViolationRecord[];
+  notifications: Notification[];
 
   // 当前用户
   currentUser: User | null;
@@ -75,6 +77,13 @@ interface AppContextValue {
   adminDeleteAnnouncement: (id: string) => void;
   adminUnbanUser: (userId: string) => void;
 
+  // 通知操作
+  addNotification: (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
+  deleteNotification: (id: string) => void;
+  getUnreadCount: () => number;
+
   // 模拟 cron:进入页面时扫描过期 pending
   sweepExpired: () => void;
 }
@@ -89,6 +98,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
   const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
   const [violations, setViolations] = useState<ViolationRecord[]>(mockViolations);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // 从 localStorage 恢复登录态
@@ -134,6 +144,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     sweepExpired();
   }, [sweepExpired]);
+
+  // ===== 通知操作 =====
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: genId('n'),
+      read: false,
+      createdAt: new Date().toISOString(),
+    };
+    setNotifications((prev) => [newNotification, ...prev]);
+  }, []);
+
+  const markNotificationRead = useCallback((id: string) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  }, []);
+
+  const markAllNotificationsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
+
+  const deleteNotification = useCallback((id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
+  const getUnreadCount = useCallback(() => {
+    if (!currentUserId) return 0;
+    return notifications.filter((n) => n.userId === currentUserId && !n.read).length;
+  }, [notifications, currentUserId]);
 
   const currentUser = useMemo(
     () => users.find((u) => u.id === currentUserId) ?? null,
@@ -210,8 +248,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
     };
     setAppointments((prev) => [...prev, appointment]);
+
+    // 发送通知给教练
+    const coach = coaches.find((c) => c.id === draft.coachId);
+    if (coach) {
+      addNotification({
+        userId: coach.userId,
+        type: 'booking_approved',
+        title: '新的预约请求',
+        content: `${currentUser.name} 预约了您的带练时段: ${draft.date} ${draft.startTime}-${draft.endTime}`,
+        relatedId: appointment.id,
+      });
+    }
+
+    // 发送通知给学员
+    addNotification({
+      userId: currentUser.id,
+      type: 'booking_approved',
+      title: '预约提交成功',
+      content: `您已预约 ${coach?.name || ''} 的带练时段: ${draft.date} ${draft.startTime}-${draft.endTime}, 等待教练审核`,
+      relatedId: appointment.id,
+    });
+
     return { ok: true, appointment };
-  }, [currentUser, appointments]);
+  }, [currentUser, appointments, coaches, addNotification]);
 
   // ===== 取消预约(含 24h 违约判定) =====
   const cancelBooking = useCallback((appointmentId: string): { ok: boolean; isViolation?: boolean; error?: string } => {
@@ -272,27 +332,58 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ===== 教练审核预约 =====
   const coachApproveAppointment = useCallback((appointmentId: string) => {
     setAppointments((prev) =>
-      prev.map((a) => (a.id === appointmentId && a.status === 'pending' ? { ...a, status: 'approved' as const, updatedAt: new Date().toISOString() } : a)),
+      prev.map((a) => {
+        if (a.id === appointmentId && a.status === 'pending') {
+          const updated = { ...a, status: 'approved' as const, updatedAt: new Date().toISOString() };
+          addNotification({
+            userId: a.studentId,
+            type: 'booking_approved',
+            title: '预约已确认',
+            content: `您的预约已被教练确认: ${a.date} ${a.startTime}-${a.endTime}`,
+            relatedId: a.id,
+          });
+          return updated;
+        }
+        return a;
+      }),
     );
-  }, []);
+  }, [addNotification]);
 
   const coachRejectAppointment = useCallback((appointmentId: string, reason: string) => {
     setAppointments((prev) =>
-      prev.map((a) =>
-        a.id === appointmentId && a.status === 'pending'
-          ? { ...a, status: 'rejected' as const, cancelReason: reason, updatedAt: new Date().toISOString() }
-          : a,
-      ),
+      prev.map((a) => {
+        if (a.id === appointmentId && a.status === 'pending') {
+          const updated = { ...a, status: 'rejected' as const, cancelReason: reason, updatedAt: new Date().toISOString() };
+          addNotification({
+            userId: a.studentId,
+            type: 'booking_rejected',
+            title: '预约被拒绝',
+            content: `您的预约被教练拒绝: ${reason}`,
+            relatedId: a.id,
+          });
+          return updated;
+        }
+        return a;
+      }),
     );
-  }, []);
+  }, [addNotification]);
 
   const coachCompleteAppointment = useCallback((appointmentId: string) => {
     setAppointments((prev) =>
-      prev.map((a) =>
-        a.id === appointmentId && a.status === 'approved'
-          ? { ...a, status: 'completed' as const, updatedAt: new Date().toISOString() }
-          : a,
-      ),
+      prev.map((a) => {
+        if (a.id === appointmentId && a.status === 'approved') {
+          const updated = { ...a, status: 'completed' as const, updatedAt: new Date().toISOString() };
+          addNotification({
+            userId: a.studentId,
+            type: 'booking_completed',
+            title: '训练已完成',
+            content: `您与教练的带练已完成: ${a.date} ${a.startTime}-${a.endTime}, 记得打卡记录训练成果哦!`,
+            relatedId: a.id,
+          });
+          return updated;
+        }
+        return a;
+      }),
     );
     // 教练累计次数 +1
     setCoaches((prev) =>
@@ -304,7 +395,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return c;
       }),
     );
-  }, [appointments]);
+  }, [appointments, addNotification]);
 
   // ===== 教练时段管理 =====
   const coachToggleSlot = useCallback((slotId: string) => {
@@ -346,32 +437,55 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // ===== 管理员操作 =====
   const adminApproveCoach = useCallback((coachId: string) => {
+    const coach = coaches.find((c) => c.id === coachId);
     setCoaches((prev) =>
-      prev.map((c) =>
-        c.id === coachId && c.certStatus === 'pending'
-          ? { ...c, certStatus: 'approved' as const, certReviewedAt: new Date().toISOString() }
-          : c,
-      ),
+      prev.map((c) => {
+        if (c.id === coachId && c.certStatus === 'pending') {
+          const updated = { ...c, certStatus: 'approved' as const, certReviewedAt: new Date().toISOString() };
+          if (coach) {
+            addNotification({
+              userId: coach.userId,
+              type: 'coach_approved',
+              title: '教练认证通过',
+              content: '恭喜!您的教练认证申请已通过,现在可以开始接受预约了',
+              relatedId: coach.id,
+            });
+          }
+          return updated;
+        }
+        return c;
+      }),
     );
     // 同步用户角色 member → coach
     setUsers((prev) =>
       prev.map((u) => {
-        const coach = coaches.find((c) => c.id === coachId);
         if (coach && u.id === coach.userId) return { ...u, role: 'coach' as const };
         return u;
       }),
     );
-  }, [coaches]);
+  }, [coaches, addNotification]);
 
   const adminRejectCoach = useCallback((coachId: string, reason: string) => {
+    const coach = coaches.find((c) => c.id === coachId);
     setCoaches((prev) =>
-      prev.map((c) =>
-        c.id === coachId && c.certStatus === 'pending'
-          ? { ...c, certStatus: 'rejected' as const, certReviewNote: reason, certReviewedAt: new Date().toISOString() }
-          : c,
-      ),
+      prev.map((c) => {
+        if (c.id === coachId && c.certStatus === 'pending') {
+          const updated = { ...c, certStatus: 'rejected' as const, certReviewNote: reason, certReviewedAt: new Date().toISOString() };
+          if (coach) {
+            addNotification({
+              userId: coach.userId,
+              type: 'coach_rejected',
+              title: '教练认证未通过',
+              content: `您的教练认证申请未通过,原因: ${reason}`,
+              relatedId: coach.id,
+            });
+          }
+          return updated;
+        }
+        return c;
+      }),
     );
-  }, []);
+  }, [coaches, addNotification]);
 
   const adminPublishAnnouncement = useCallback((a: Omit<Announcement, 'id' | 'publishedAt'>) => {
     setAnnouncements((prev) => [
@@ -398,6 +512,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     appointments,
     announcements,
     violations,
+    notifications,
     currentUser,
     currentCoach,
     login,
@@ -416,6 +531,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     adminPublishAnnouncement,
     adminDeleteAnnouncement,
     adminUnbanUser,
+    addNotification,
+    markNotificationRead,
+    markAllNotificationsRead,
+    deleteNotification,
+    getUnreadCount,
     sweepExpired,
   };
 

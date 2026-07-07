@@ -160,3 +160,135 @@ export function formatDateTime(dateStr: string, startTime: string, endTime: stri
 }
 
 export { BOOKING_WINDOW_DAYS };
+
+// ===== 智能教练匹配算法 =====
+
+export interface MatchPreferences {
+  trainingGoal: string;
+  genderPreference: 'male' | 'female' | 'any';
+  isBeginner: boolean;
+  preferredCampus: string | null;
+}
+
+export interface CoachMatchResult {
+  coachId: string;
+  coachName: string;
+  matchScore: number;
+  matchDetails: string[];
+  specialties: string[];
+  department: string;
+  isBeginnerFriendly: boolean;
+  isFemaleFriendly: boolean;
+  totalSessions: number;
+}
+
+const GOAL_KEYWORDS: Record<string, string[]> = {
+  '增肌': ['增肌', '力量', '健美', '大块', '肌肉'],
+  '减脂': ['减脂', '减重', '塑形', '有氧', '脂肪'],
+  '塑形': ['塑形', '线条', '体态', '匀称'],
+  '体能': ['体能', '耐力', '心肺', '爆发力'],
+  '新手': ['入门', '新手', '零基础', '初学者'],
+  '康复': ['康复', '恢复', '伤后', '理疗'],
+};
+
+const CAMPUS_DISTANCE: Record<string, Record<string, number>> = {
+  'handan-south': { 'handan-south': 0, 'handan-north': 1, 'wuliu': 3, 'jiangwan': 8, 'fenglin': 12, 'zhangjiang': 15 },
+  'handan-north': { 'handan-south': 1, 'handan-north': 0, 'wuliu': 2, 'jiangwan': 7, 'fenglin': 11, 'zhangjiang': 14 },
+  'wuliu': { 'handan-south': 3, 'handan-north': 2, 'wuliu': 0, 'jiangwan': 5, 'fenglin': 9, 'zhangjiang': 12 },
+  'jiangwan': { 'handan-south': 8, 'handan-north': 7, 'wuliu': 5, 'jiangwan': 0, 'fenglin': 8, 'zhangjiang': 10 },
+  'fenglin': { 'handan-south': 12, 'handan-north': 11, 'wuliu': 9, 'jiangwan': 8, 'fenglin': 0, 'zhangjiang': 6 },
+  'zhangjiang': { 'handan-south': 15, 'handan-north': 14, 'wuliu': 12, 'jiangwan': 10, 'fenglin': 6, 'zhangjiang': 0 },
+};
+
+export function matchCoaches(
+  coaches: any[],
+  preferences: MatchPreferences,
+): CoachMatchResult[] {
+  return coaches
+    .filter((c) => c.certStatus === 'approved')
+    .map((coach) => {
+      let score = 0;
+      const details: string[] = [];
+
+      if (preferences.isBeginner && coach.isBeginnerFriendly) {
+        score += 25;
+        details.push('新手友好');
+      } else if (!preferences.isBeginner && !coach.isBeginnerFriendly) {
+        score += 10;
+        details.push('适合有经验学员');
+      }
+
+      if (preferences.genderPreference === 'female' && coach.isFemaleFriendly) {
+        score += 20;
+        details.push('女生友好');
+      } else if (preferences.genderPreference === 'male' && !coach.isFemaleFriendly) {
+        score += 10;
+        details.push('适合男性学员');
+      } else if (preferences.genderPreference === 'any') {
+        score += 15;
+        details.push('不限性别');
+      }
+
+      const matchedSpecialties = coach.specialties.filter((s: string) => {
+        const goalKeywords = GOAL_KEYWORDS[preferences.trainingGoal] || [];
+        return goalKeywords.some((kw) => s.includes(kw)) || s.includes(preferences.trainingGoal);
+      });
+
+      if (matchedSpecialties.length > 0) {
+        score += matchedSpecialties.length * 20;
+        details.push(`专长匹配: ${matchedSpecialties.join(', ')}`);
+      } else if (coach.specialties.length > 0) {
+        score += 5;
+        details.push(`专长: ${coach.specialties.join(', ')}`);
+      }
+
+      if (preferences.preferredCampus && coach.venues.length > 0) {
+        const campus = preferences.preferredCampus;
+        const minDistance = Math.min(
+          ...coach.venues.map((vId: string) => {
+            const venue = coaches.find((c) => c.id === vId);
+            if (!venue) return 999;
+            return CAMPUS_DISTANCE[campus]?.[venue.campus] || 999;
+          }),
+        );
+
+        if (minDistance === 0) {
+          score += 20;
+          details.push('同校区');
+        } else if (minDistance <= 2) {
+          score += 15;
+          details.push('邻近校区');
+        } else if (minDistance <= 5) {
+          score += 10;
+          details.push('较近校区');
+        } else {
+          score += 5;
+          details.push('跨校区');
+        }
+      } else {
+        score += 10;
+        details.push('多校区可选');
+      }
+
+      if (coach.totalSessions >= 20) {
+        score += 10;
+        details.push('经验丰富');
+      } else if (coach.totalSessions >= 5) {
+        score += 5;
+        details.push('有一定经验');
+      }
+
+      return {
+        coachId: coach.id,
+        coachName: coach.name,
+        matchScore: Math.min(score, 100),
+        matchDetails: details.slice(0, 4),
+        specialties: coach.specialties,
+        department: coach.department,
+        isBeginnerFriendly: coach.isBeginnerFriendly,
+        isFemaleFriendly: coach.isFemaleFriendly,
+        totalSessions: coach.totalSessions,
+      };
+    })
+    .sort((a, b) => b.matchScore - a.matchScore);
+}

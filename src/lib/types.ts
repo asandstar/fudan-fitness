@@ -142,3 +142,18 @@ export interface BanStatus {
   banned: boolean;
   remainingDays?: number;
 }
+
+// 通知类型
+export type NotificationType = 'booking_approved' | 'booking_rejected' | 'booking_cancelled' | 'booking_completed' | 'coach_approved' | 'coach_rejected' | 'system';
+
+// 通知
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  content: string;
+  read: boolean;
+  createdAt: string;
+  relatedId?: string; // 关联的预约ID、教练ID等
+}

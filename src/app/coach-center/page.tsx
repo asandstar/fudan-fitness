@@ -237,6 +237,30 @@ export default function CoachCenterPage() {
                 <div className="text-2xl font-bold text-primary">{currentCoach.totalStudents}</div>
                 <div className="text-xs text-text-tertiary">服务社员数</div>
               </div>
+              <div className="p-3 rounded-md bg-success/10">
+                <div className="text-2xl font-bold text-emerald-700">
+                  {myReceived.filter((a) => a.status === 'completed').length}
+                </div>
+                <div className="text-xs text-text-tertiary">已完成课程</div>
+              </div>
+              <div className="p-3 rounded-md bg-info/10">
+                <div className="text-2xl font-bold text-blue-700">
+                  {Math.round((myReceived.filter((a) => a.status === 'approved').length / Math.max(myReceived.length, 1)) * 100)}%
+                </div>
+                <div className="text-xs text-text-tertiary">通过率</div>
+              </div>
+              <div className="p-3 rounded-md bg-primary-50">
+                <div className="text-2xl font-bold text-primary">
+                  {mySlots.filter((s) => s.isAvailable).length}
+                </div>
+                <div className="text-xs text-text-tertiary">开放时段</div>
+              </div>
+              <div className="p-3 rounded-md bg-accent/10">
+                <div className="text-2xl font-bold text-accent">
+                  {myReceived.filter((a) => a.status === 'pending').length}
+                </div>
+                <div className="text-xs text-text-tertiary">待处理预约</div>
+              </div>
             </div>
           </div>
         </aside>
