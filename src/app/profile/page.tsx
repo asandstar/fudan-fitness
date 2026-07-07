@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   UserCircle, Calendar, AlertTriangle, Ban, Dumbbell, ArrowRight,
-  Clock, MapPin, X, Info, GraduationCap, Award,
+  Clock, MapPin, X, Info, GraduationCap, Award, TrendingUp, Target, CheckCircle2,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { CAMPUS_LABELS, MAX_WEEKLY_BOOKINGS, PROFILE_TABS } from '@/lib/constants';
@@ -158,6 +158,43 @@ export default function ProfilePage() {
       </div>
 
       {/* 教练申请入口(普通社员) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="card p-4 text-center">
+          <div className="w-8 h-8 rounded-lg bg-primary-50 text-primary flex items-center justify-center mx-auto mb-2">
+            <Calendar size={16} />
+          </div>
+          <div className="text-xl font-bold text-text-primary">{myAppointments.length}</div>
+          <div className="text-xs text-text-tertiary">累计预约</div>
+        </div>
+        <div className="card p-4 text-center">
+          <div className="w-8 h-8 rounded-lg bg-success/20 text-emerald-700 flex items-center justify-center mx-auto mb-2">
+            <CheckCircle2 size={16} />
+          </div>
+          <div className="text-xl font-bold text-text-primary">
+            {myAppointments.filter((a) => a.status === 'completed').length}
+          </div>
+          <div className="text-xs text-text-tertiary">已完成</div>
+        </div>
+        <div className="card p-4 text-center">
+          <div className="w-8 h-8 rounded-lg bg-info/20 text-blue-700 flex items-center justify-center mx-auto mb-2">
+            <Target size={16} />
+          </div>
+          <div className="text-xl font-bold text-text-primary">
+            {Math.round((myAppointments.filter((a) => a.status === 'completed').length / Math.max(myAppointments.length, 1)) * 100)}%
+          </div>
+          <div className="text-xs text-text-tertiary">完成率</div>
+        </div>
+        <div className="card p-4 text-center">
+          <div className="w-8 h-8 rounded-lg bg-accent/20 text-accent flex items-center justify-center mx-auto mb-2">
+            <TrendingUp size={16} />
+          </div>
+          <div className="text-xl font-bold text-text-primary">
+            {myAppointments.filter((a) => ['pending', 'approved'].includes(a.status)).length}
+          </div>
+          <div className="text-xs text-text-tertiary">进行中</div>
+        </div>
+      </div>
+
       {currentUser.role === 'member' && !banStatus.banned && (
         <div className="card p-5 mb-6 bg-primary-50 border-primary">
           <div className="flex items-center justify-between flex-wrap gap-3">

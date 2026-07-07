@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   UserCheck, Megaphone, Calendar, Ban, Check, X, Pin, Trash2,
-  Shield, Search, RefreshCw,
+  Shield, Search, RefreshCw, LayoutDashboard, Users, Dumbbell, Activity,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { ADMIN_TABS, CAMPUS_LABELS, STATUS_LABELS } from '@/lib/constants';
@@ -17,6 +17,7 @@ import Toast from '@/components/ui/Toast';
 import type { CoachProfile } from '@/lib/types';
 
 const NAV_ITEMS = [
+  { key: 'dashboard', label: '数据看板', icon: LayoutDashboard },
   { key: 'coaches', label: '教练审核', icon: UserCheck },
   { key: 'announcements', label: '公告发布', icon: Megaphone },
   { key: 'appointments', label: '预约记录', icon: Calendar },
@@ -143,6 +144,163 @@ export default function AdminPage() {
         </div>
 
         {/* 1. 教练审核 */}
+        {tab === 'dashboard' && (
+          <div className="space-y-4">
+            <div className="card p-5">
+              <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                <LayoutDashboard size={18} /> 平台数据概览
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-4 rounded-lg bg-primary-50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users size={16} className="text-primary" />
+                    <span className="text-xs text-text-secondary">注册用户</span>
+                  </div>
+                  <div className="text-2xl font-bold text-text-primary">{users.length}</div>
+                </div>
+                <div className="p-4 rounded-lg bg-success/10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Dumbbell size={16} className="text-emerald-700" />
+                    <span className="text-xs text-text-secondary">认证教练</span>
+                  </div>
+                  <div className="text-2xl font-bold text-text-primary">
+                    {coaches.filter((c) => c.certStatus === 'approved').length}
+                  </div>
+                </div>
+                <div className="p-4 rounded-lg bg-info/10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar size={16} className="text-blue-700" />
+                    <span className="text-xs text-text-secondary">预约总数</span>
+                  </div>
+                  <div className="text-2xl font-bold text-text-primary">{appointments.length}</div>
+                </div>
+                <div className="p-4 rounded-lg bg-accent/10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Activity size={16} className="text-accent" />
+                    <span className="text-xs text-text-secondary">已完成课程</span>
+                  </div>
+                  <div className="text-2xl font-bold text-text-primary">
+                    {appointments.filter((a) => a.status === 'completed').length}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="card p-5">
+                <h3 className="text-sm font-semibold text-text-primary mb-3">预约状态分布</h3>
+                <div className="space-y-3">
+                  {(['pending', 'approved', 'completed', 'cancelled', 'rejected', 'expired'] as const).map((status) => {
+                    const count = appointments.filter((a) => a.status === status).length;
+                    const percent = Math.round((count / Math.max(appointments.length, 1)) * 100);
+                    return (
+                      <div key={status}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-text-secondary">{STATUS_LABELS[status]}</span>
+                          <span className="text-text-primary">{count} ({percent}%)</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-bg-warm overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              status === 'completed' ? 'bg-success' :
+                              status === 'approved' ? 'bg-primary' :
+                              status === 'pending' ? 'bg-warning' :
+                              'bg-text-tertiary'
+                            }`}
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="card p-5">
+                <h3 className="text-sm font-semibold text-text-primary mb-3">待处理事项</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 rounded-md bg-warning/10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-warning/30 flex items-center justify-center">
+                        <UserCheck size={14} className="text-amber-700" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-text-primary">教练审核待处理</div>
+                        <div className="text-xs text-text-tertiary">{pendingCoaches.length} 人等待审核</div>
+                      </div>
+                    </div>
+                    <span className="text-xl font-bold text-amber-700">{pendingCoaches.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-primary-50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                        <Calendar size={14} className="text-primary" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-text-primary">待确认预约</div>
+                        <div className="text-xs text-text-tertiary">等待教练审核</div>
+                      </div>
+                    </div>
+                    <span className="text-xl font-bold text-primary">
+                      {appointments.filter((a) => a.status === 'pending').length}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-danger/10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center">
+                        <Ban size={14} className="text-danger" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-text-primary">黑名单用户</div>
+                        <div className="text-xs text-text-tertiary">已禁约用户</div>
+                      </div>
+                    </div>
+                    <span className="text-xl font-bold text-danger">{bannedUsers.length}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="card p-5">
+              <h3 className="text-sm font-semibold text-text-primary mb-3">教练活跃度排行</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-text-tertiary border-b border-border-light">
+                      <th className="py-2 pr-3">排名</th>
+                      <th className="py-2 pr-3">教练</th>
+                      <th className="py-2 pr-3">院系</th>
+                      <th className="py-2 pr-3">专长</th>
+                      <th className="py-2 pr-3">累计带练</th>
+                      <th className="py-2 pr-3">服务学员</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {coaches
+                      .filter((c) => c.certStatus === 'approved')
+                      .sort((a, b) => b.totalSessions - a.totalSessions)
+                      .slice(0, 10)
+                      .map((c, i) => (
+                        <tr key={c.id} className="border-b border-border-light hover:bg-bg-warm/50">
+                          <td className="py-2 pr-3">
+                            {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                          </td>
+                          <td className="py-2 pr-3 font-medium">{c.name}</td>
+                          <td className="py-2 pr-3 text-xs">{c.department}</td>
+                          <td className="py-2 pr-3 text-xs">
+                            {c.specialties.slice(0, 2).join('、')}
+                          </td>
+                          <td className="py-2 pr-3 text-primary font-medium">{c.totalSessions}</td>
+                          <td className="py-2 pr-3">{c.totalStudents}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {tab === 'coaches' && (
           <div className="card p-5">
             <h2 className="text-lg font-semibold text-text-primary mb-4">教练审核 · 待审 {pendingCoaches.length} 人</h2>

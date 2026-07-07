@@ -17,6 +17,7 @@ import TimeSlotGrid from '@/components/ui/TimeSlotGrid';
 import CoachCard from '@/components/ui/CoachCard';
 import Modal from '@/components/ui/Modal';
 import Toast from '@/components/ui/Toast';
+import AITrainingSuggestion from '@/components/ui/AITrainingSuggestion';
 import type { BookingDraft } from '@/lib/types';
 
 const STEPS = [
@@ -406,8 +407,10 @@ function BookingInner() {
             {error && <p className="text-xs text-danger mt-2 text-right">{error}</p>}
           </div>
 
-          {/* 右侧预约须知 */}
-          <aside className="lg:sticky lg:top-20 self-start">
+          {/* 右侧栏 */}
+          <aside className="lg:sticky lg:top-20 self-start space-y-4">
+            <AITrainingSuggestion onSuggestion={setTrainingNote} />
+            
             <div className="card p-5">
               <h3 className="font-semibold text-text-primary mb-3 flex items-center gap-2">
                 <Info size={16} className="text-primary" /> 预约须知

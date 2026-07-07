@@ -107,13 +107,16 @@ export default function HomePage() {
               让科学训练触手可及。
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/booking" className="btn-primary text-base px-6 py-3">
-                立即预约教练 <ArrowRight size={16} />
-              </Link>
-              <Link href="/venues" className="btn-ghost text-base px-6 py-3 bg-white/10 text-white hover:bg-white/20">
-                了解场馆
-              </Link>
-            </div>
+          <Link href="/booking" className="btn-primary text-base px-6 py-3">
+            立即预约教练 <ArrowRight size={16} />
+          </Link>
+          <Link href="/match" className="btn-ghost text-base px-6 py-3 bg-white/10 text-white hover:bg-white/20 flex items-center gap-2">
+            <Sparkles size={16} /> AI智能匹配
+          </Link>
+          <Link href="/venues" className="btn-ghost text-base px-6 py-3 bg-white/10 text-white hover:bg-white/20">
+            了解场馆
+          </Link>
+        </div>
             {!currentUser && (
               <p className="mt-4 text-sm text-white/70">
                 新用户? <Link href="/login" className="text-primary-light underline">点此登录</Link> · Demo 账号一键体验
