@@ -11,9 +11,9 @@ const campusData = [
     mapUrl: 'https://aka.doubaocdn.com/s/r80U1wju77',
     venues: mockVenues.filter(v => ['handan-south', 'handan-north', 'wuliu'].includes(v.campus)),
     gymLocations: [
-      { name: '南区健身房', x: 55, y: 45, venueId: 'v1' },
-      { name: '北区健身房', x: 25, y: 65, venueId: 'v2' },
-      { name: '工会健身房', x: 45, y: 35, venueId: 'v3' },
+      { name: '南区健身房', x: 52, y: 58, venueId: 'v1' },
+      { name: '北区健身房', x: 48, y: 28, venueId: 'v2' },
+      { name: '工会健身房', x: 42, y: 42, venueId: 'v3' },
     ],
   },
   {
@@ -22,7 +22,7 @@ const campusData = [
     mapUrl: 'https://aka.doubaocdn.com/s/EwC11wju77',
     venues: mockVenues.filter(v => v.campus === 'fenglin'),
     gymLocations: [
-      { name: '综合体育馆健身房', x: 50, y: 50, venueId: 'v5' },
+      { name: '综合体育馆健身房', x: 58, y: 48, venueId: 'v5' },
     ],
   },
   {
@@ -31,7 +31,7 @@ const campusData = [
     mapUrl: 'https://aka.doubaocdn.com/s/75p31wju77',
     venues: mockVenues.filter(v => v.campus === 'jiangwan'),
     gymLocations: [
-      { name: '体育馆健身房', x: 50, y: 55, venueId: 'v4' },
+      { name: '体育馆健身房', x: 48, y: 68, venueId: 'v4' },
     ],
   },
   {
@@ -40,7 +40,7 @@ const campusData = [
     mapUrl: 'https://aka.doubaocdn.com/s/6J8U1wju77',
     venues: mockVenues.filter(v => v.campus === 'zhangjiang'),
     gymLocations: [
-      { name: '学生活动中心健身房', x: 45, y: 40, venueId: 'v6' },
+      { name: '学生活动中心健身房', x: 50, y: 35, venueId: 'v6' },
     ],
   },
 ];
