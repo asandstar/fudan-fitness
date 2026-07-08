@@ -40,11 +40,11 @@ function generateHeatData(venueId: string): number[][] {
 }
 
 function getHeatColor(value: number): string {
-  if (value < 0.2) return 'bg-emerald-100';
-  if (value < 0.4) return 'bg-emerald-200';
-  if (value < 0.6) return 'bg-yellow-200';
-  if (value < 0.8) return 'bg-orange-300';
-  return 'bg-red-400';
+  if (value < 0.2) return 'bg-heat-low';
+  if (value < 0.4) return 'bg-heat-low-medium';
+  if (value < 0.6) return 'bg-heat-medium';
+  if (value < 0.8) return 'bg-heat-high';
+  return 'bg-heat-peak';
 }
 
 function getCrowdLevel(value: number): { label: string; color: string } {
@@ -147,43 +147,43 @@ export default function VenueHeatmap({ venues }: VenueHeatmapProps) {
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border-light">
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-emerald-100" />
+            <div className="w-3 h-3 rounded bg-heat-low" />
             <span className="text-text-tertiary">人少</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-yellow-200" />
+            <div className="w-3 h-3 rounded bg-heat-medium" />
             <span className="text-text-tertiary">适中</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-orange-300" />
+            <div className="w-3 h-3 rounded bg-heat-high" />
             <span className="text-text-tertiary">较多</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-red-400" />
+            <div className="w-3 h-3 rounded bg-heat-peak" />
             <span className="text-text-tertiary">高峰</span>
           </div>
         </div>
       </div>
 
       {selectedVenue && (
-        <div className="mt-4 p-4 rounded-lg bg-emerald-50 border border-emerald-200">
+        <div className="mt-4 p-4 rounded-lg bg-success/10 border border-success/20">
           <div className="flex items-start gap-3">
-            <TrendingDown size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+            <TrendingDown size={18} className="text-success shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-emerald-800 mb-2">
+              <h3 className="text-sm font-medium text-text-primary mb-2">
                 {selectedVenue.name} · 最佳训练时间
               </h3>
               <div className="flex flex-wrap gap-2">
                 {bestTimes.map((t, i) => (
                   <div
                     key={i}
-                    className="px-3 py-1.5 rounded-md bg-white text-xs text-emerald-700 font-medium shadow-sm"
+                    className="px-3 py-1.5 rounded-md bg-surface text-xs text-text-primary font-medium shadow-sm border border-border-light"
                   >
                     {t.day} {t.time}
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
+              <p className="text-xs text-text-secondary mt-2 flex items-center gap-1">
                 <Info size={12} />
                 建议选择以上时段训练，器械更充裕，体验更佳
               </p>

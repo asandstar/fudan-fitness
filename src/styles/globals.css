@@ -35,6 +35,13 @@
   --nav-height: 64px;
 }
 
+/* 热力图颜色 */
+.bg-heat-low { background-color: #D1FAE5; }
+.bg-heat-low-medium { background-color: #A7F3D0; }
+.bg-heat-medium { background-color: #FDE68A; }
+.bg-heat-high { background-color: #FDBA74; }
+.bg-heat-peak { background-color: #F87171; }
+
 [data-theme="dark"] {
   --color-primary: #5EDBD3;
   --color-primary-light: #8FE8E1;
@@ -43,27 +50,34 @@
   --color-primary-100: rgba(94, 219, 211, 0.20);
 
   --color-accent: #FF9E95;
-  --color-success: #8BD9B0;
-  --color-info: #7EC8F0;
-  --color-warning: #FFE066;
-  --color-danger: #FF6B6B;
+  --color-success: #68D391;
+  --color-info: #63B3ED;
+  --color-warning: #F6AD55;
+  --color-danger: #FC8181;
 
-  --color-bg: #12181F;
-  --color-bg-warm: #1A2330;
-  --color-surface: #1E2A3A;
+  --color-bg: #0F1419;
+  --color-bg-warm: #1A1F2E;
+  --color-surface: #252D3F;
 
-  --color-text-primary: #E8ECF1;
+  --color-text-primary: #F7FAFC;
   --color-text-secondary: #A0AEC0;
-  --color-text-tertiary: #5A6A7D;
+  --color-text-tertiary: #6B7280;
 
-  --color-border: #2D3A4D;
-  --color-border-light: #243042;
+  --color-border: #2D3748;
+  --color-border-light: #243044;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.6);
   --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.7);
 }
+
+/* 暗色模式热力图颜色 */
+[data-theme="dark"] .bg-heat-low { background-color: rgba(16, 185, 129, 0.3); }
+[data-theme="dark"] .bg-heat-low-medium { background-color: rgba(16, 185, 129, 0.5); }
+[data-theme="dark"] .bg-heat-medium { background-color: rgba(245, 158, 11, 0.5); }
+[data-theme="dark"] .bg-heat-high { background-color: rgba(249, 115, 22, 0.6); }
+[data-theme="dark"] .bg-heat-peak { background-color: rgba(239, 68, 68, 0.7); }
 
 * {
   box-sizing: border-box;
