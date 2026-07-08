@@ -3,7 +3,7 @@
 // 场馆介绍页
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Dumbbell, Activity, StretchHorizontal, TrendingUp, ChevronRight, ExternalLink } from 'lucide-react';
+import { Dumbbell, Activity, StretchHorizontal, TrendingUp, ChevronRight, ExternalLink, Shield, Navigation, AlertTriangle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { CAMPUS_LABELS } from '@/lib/constants';
 import VenueCard from '@/components/ui/VenueCard';
@@ -223,6 +223,64 @@ export default function VenuesPage() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* 场馆对比表 */}
+      <section className="mt-12 pt-10 border-t border-border-light">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">场馆对比</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-bg-warm">
+                <th className="text-left p-3 font-medium text-text-primary">场馆名称</th>
+                <th className="text-left p-3 font-medium text-text-primary">校区</th>
+                <th className="text-left p-3 font-medium text-text-primary">开放时间</th>
+                <th className="text-center p-3 font-medium text-text-primary">容量</th>
+                <th className="text-center p-3 font-medium text-text-primary">状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              {venues.slice().sort((a, b) => a.displayOrder - b.displayOrder).map((v) => (
+                <tr key={v.id} className="border-b border-border-light hover:bg-bg-warm/50 transition-colors">
+                  <td className="p-3 font-medium text-text-primary">{v.name}</td>
+                  <td className="p-3 text-text-secondary">{CAMPUS_LABELS[v.campus]}</td>
+                  <td className="p-3 text-text-secondary">{v.openTime}-{v.closeTime}</td>
+                  <td className="p-3 text-center">{v.capacity}人</td>
+                  <td className="p-3 text-center">
+                    {v.bookable ? (
+                      <span className="badge bg-success/30 text-emerald-700">可预约</span>
+                    ) : (
+                      <span className="badge bg-bg-warm text-text-tertiary">展示中</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* 通用使用须知 */}
+      <section className="mt-12 p-6 rounded-lg bg-warning/5 border border-warning/20">
+        <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+          <Shield size={18} className="text-warning" /> 场馆使用须知
+        </h2>
+        <ul className="space-y-2">
+          {[
+            '所有场馆均需携带校园卡刷卡进入',
+            '必须穿着运动鞋(禁止拖鞋、皮鞋、高跟鞋)',
+            '训练结束后请将器材归位到原位置',
+            '禁止在力量区域内奔跑、追逐或打闹',
+            '大重量自由重量训练建议结伴进行,确保安全',
+            '保持场地清洁,带走个人垃圾',
+            '如发现器材损坏请及时告知管理人员',
+          ].map((rule, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-text-secondary">
+              <AlertTriangle size={14} className="text-warning shrink-0 mt-0.3" />
+              <span>{rule}</span>
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* CTA */}

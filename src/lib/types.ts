@@ -55,6 +55,20 @@ export interface Venue {
   displayOrder: number;
   imageUrl?: string;
   features?: string[];
+  layoutInfo?: string;       // 楼层布局描述
+  peakHours?: string;        // 高峰时段提示
+  tips?: string[];           // 实用小贴士
+  transportation?: string;   // 交通指引
+  rules?: string[];          // 使用须知
+}
+
+// 学员评价
+export interface Review {
+  id: string;
+  studentName: string;
+  rating: number;             // 1-5星
+  content: string;
+  date: string;
 }
 
 // 教练资料
@@ -77,6 +91,10 @@ export interface CoachProfile {
   reviewedBy?: string;
   venues: string[];          // 关联场馆 ID
   createdAt: string;
+  trainingPhilosophy?: string; // 训练理念（详细版）
+  rating?: number;             // 平均评分 1-5
+  studentReviews?: Review[];   // 学员评价
+  successCases?: string[];     // 成功案例
 }
 
 // 教练可用时段

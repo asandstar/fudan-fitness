@@ -1,7 +1,7 @@
 'use client';
 
-// 教练卡片
-import { BadgeCheck, Sparkles, Users as UsersIcon } from 'lucide-react';
+// 教练卡片 — 含评分星级和评价摘要
+import { BadgeCheck, Sparkles, Users as UsersIcon, Star } from 'lucide-react';
 import type { CoachProfile } from '@/lib/types';
 import { avatarInitial } from '@/lib/utils';
 
@@ -9,6 +9,21 @@ interface CoachCardProps {
   coach: CoachProfile;
   onBook?: (coachId: string) => void;
   compact?: boolean;
+}
+
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star
+          key={i}
+          size={11}
+          className={i <= Math.round(rating) ? 'text-warning fill-warning' : 'text-border-light'}
+        />
+      ))}
+      <span className="text-xs text-text-tertiary ml-1">{rating.toFixed(1)}</span>
+    </div>
+  );
 }
 
 export default function CoachCard({ coach, onBook, compact }: CoachCardProps) {
@@ -26,14 +41,37 @@ export default function CoachCard({ coach, onBook, compact }: CoachCardProps) {
             )}
           </div>
           <p className="text-xs text-text-tertiary mt-0.5">{coach.department} · {coach.grade}</p>
-          <div className="flex items-center gap-2 mt-1 text-xs text-text-secondary">
+          <div className="flex items-center gap-3 mt-1 text-xs text-text-secondary">
             <span className="flex items-center gap-0.5"><UsersIcon size={11} /> {coach.totalSessions} 次</span>
+            {coach.rating && <StarRating rating={coach.rating} />}
           </div>
         </div>
       </div>
 
       {!compact && (
-        <p className="text-sm text-text-secondary mb-3 line-clamp-2 italic">"{coach.styleDesc}"</p>
+        <>
+          <p className="text-sm text-text-secondary mb-2 line-clamp-2 italic">"{coach.styleDesc}"</p>
+          
+          {/* 训练理念 */}
+          {coach.trainingPhilosophy && (
+            <p className="text-xs text-text-tertiary mb-3 line-clamp-2 border-l-2 border-primary/30 pl-2">
+              {coach.trainingPhilosophy}
+            </p>
+          )}
+
+          {/* 最新学员评价 */}
+          {coach.studentReviews && coach.studentReviews.length > 0 && (
+            <div className="mb-3 p-2.5 rounded-md bg-bg-warm">
+              <div className="flex items-center gap-1 mb-1">
+                <Star size={10} className="text-warning fill-warning" />
+                <span className="text-xs font-medium text-text-secondary">学员评价</span>
+              </div>
+              <p className="text-xs text-text-tertiary line-clamp-2">
+                "{coach.studentReviews[0].content}"
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       <div className="flex flex-wrap gap-1.5 mb-3">

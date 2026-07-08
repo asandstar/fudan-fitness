@@ -1,8 +1,8 @@
 'use client';
 
-// 场馆卡片(3 变体:bookable/flagship/coming)
+// 场馆卡片(3 变体:bookable/flagship/coming) — CSS渐变头部，无外部图片
 import Link from 'next/link';
-import { MapPin, Clock, Users, ArrowRight } from 'lucide-react';
+import { MapPin, Clock, Users, ArrowRight, Dumbbell, AlertTriangle, Navigation, Info } from 'lucide-react';
 import { CAMPUS_LABELS } from '@/lib/constants';
 import type { Venue } from '@/lib/types';
 
@@ -12,24 +12,35 @@ interface VenueCardProps {
   onBook?: () => void;
 }
 
+// 校区 → 渐变class映射
+function getVenueGradient(campus: string): string {
+  const map: Record<string, string> = {
+    'handan-south': 'venue-gradient-handan-south',
+    'handan-north': 'venue-gradient-handan-north',
+    'wuliu': 'venue-gradient-wuliu',
+    'jiangwan': 'venue-gradient-jiangwan',
+    'fenglin': 'venue-gradient-fenglin',
+    'zhangjiang': 'venue-gradient-zhangjiang',
+  };
+  return map[campus] || 'venue-gradient-handan-south';
+}
+
 export default function VenueCard({ venue, variant = 'bookable', onBook }: VenueCardProps) {
+  const gradientClass = getVenueGradient(venue.campus);
+
   if (variant === 'flagship') {
     return (
       <div className="card overflow-hidden flex flex-col md:flex-row">
-        <div className="relative w-full md:w-1/2 h-48 md:h-auto min-h-[200px] bg-gradient-to-br from-info/30 to-primary/20">
-          {venue.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={venue.imageUrl} alt={venue.name} className="absolute inset-0 w-full h-full object-cover" />
-          ) : null}
-          <span className="absolute top-3 left-3 badge bg-info/90 text-white">展示中</span>
-          <span className="absolute top-3 right-3 badge bg-primary text-white">旗舰</span>
+        <div className={`relative w-full md:w-1/2 h-48 md:h-auto min-h-[200px] ${gradientClass} flex items-center justify-center`}>
+          <Dumbbell size={64} strokeWidth={1} className="text-white/30" />
+          <span className="absolute top-3 left-3 badge bg-white/20 text-white backdrop-blur-sm">展示中</span>
+          <span className="absolute top-3 right-3 badge bg-white/25 text-white backdrop-blur-sm">旗舰</span>
         </div>
         <div className="flex-1 p-5">
           <h3 className="font-bold text-text-primary text-lg mb-1">{venue.name}</h3>
           <p className="text-xs text-text-tertiary mb-3">{CAMPUS_LABELS[venue.campus]}</p>
           <p className="text-sm text-text-secondary mb-4">{venue.description}</p>
-          
-          {/* 场馆特色 */}
+
           {venue.features && venue.features.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-3">
               {venue.features.map((f) => (
@@ -38,6 +49,10 @@ export default function VenueCard({ venue, variant = 'bookable', onBook }: Venue
                 </span>
               ))}
             </div>
+          )}
+
+          {venue.layoutInfo && (
+            <p className="text-xs text-text-tertiary mb-2"><Info size={10} className="inline mr-1" />{venue.layoutInfo}</p>
           )}
 
           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -71,16 +86,13 @@ export default function VenueCard({ venue, variant = 'bookable', onBook }: Venue
     );
   }
 
-  // bookable
+  // bookable — 渐变头部
   return (
-    <div className="card overflow-hidden flex flex-col">
-      {venue.imageUrl && (
-        <div className="relative h-28 bg-gradient-to-br from-primary/20 to-info/20">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={venue.imageUrl} alt={venue.name} className="w-full h-full object-cover" />
-          <span className="absolute top-2 right-2 badge bg-success/90 text-white">可预约</span>
-        </div>
-      )}
+    <div className="card overflow-hidden flex flex-col group">
+      <div className={`relative h-28 ${gradientClass} flex items-center justify-center`}>
+        <Dumbbell size={40} strokeWidth={1.2} className="text-white/25 group-hover:scale-110 transition-transform duration-300" />
+        <span className="absolute top-2 right-2 badge bg-white/20 text-white text-xs backdrop-blur-sm">可预约</span>
+      </div>
       <div className="p-5 flex flex-col flex-1">
         <div className="mb-2">
           <h3 className="font-bold text-text-primary text-lg">{venue.name}</h3>
@@ -91,12 +103,20 @@ export default function VenueCard({ venue, variant = 'bookable', onBook }: Venue
 
         <p className="text-sm text-text-secondary mt-2 mb-3 flex-1">{venue.description}</p>
 
+        {/* 高峰时段提示 */}
+        {venue.peakHours && (
+          <div className="flex items-start gap-1.5 mb-2 text-xs text-warning bg-warning/10 px-2.5 py-1.5 rounded-md">
+            <AlertTriangle size={12} className="shrink-0 mt-0.3" />
+            <span>{venue.peakHours}</span>
+          </div>
+        )}
+
         {/* 场馆特色 */}
         {venue.features && venue.features.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {venue.features.map((f) => (
               <span key={f} className="px-2 py-0.5 rounded-full bg-success/10 text-emerald-700 text-xs">
-                ✓ {f}
+                {f}
               </span>
             ))}
           </div>
@@ -111,6 +131,14 @@ export default function VenueCard({ venue, variant = 'bookable', onBook }: Venue
             <span className="badge bg-bg-warm text-text-tertiary text-xs">+{venue.facilities.length - 4}</span>
           )}
         </div>
+
+        {/* 交通指引 */}
+        {venue.transportation && (
+          <div className="flex items-start gap-1.5 text-xs text-text-tertiary mb-2">
+            <Navigation size={11} className="shrink-0 mt-0.3" />
+            <span>{venue.transportation}</span>
+          </div>
+        )}
 
         <div className="flex items-center justify-between text-xs text-text-tertiary mt-auto pt-3 border-t border-border-light">
           <div className="flex items-center gap-3">
