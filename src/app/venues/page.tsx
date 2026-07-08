@@ -291,6 +291,27 @@ export default function VenuesPage() {
           立即预约 <Dumbbell size={14} />
         </Link>
       </div>
+
+      {/* 信息来源标注 */}
+      <div className="mt-8 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <ExternalLink size={14} />
+            <span>信息来源：《复旦体育打卡地图》- 复旦研究生公众号</span>
+          </div>
+          <a
+            href="https://www.toutiao.com/article/7067406348891292192/?&source=m_redirect&wid=1783495816705"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+          >
+            查看原文 <ChevronRight size={12} />
+          </a>
+        </div>
+        <p className="text-xs text-gray-400 mt-2 text-center">
+          场馆位置信息参考自复旦研究生公众号文章，仅供校园健身服务参考使用
+        </p>
+      </div>
     </div>
   );
 }

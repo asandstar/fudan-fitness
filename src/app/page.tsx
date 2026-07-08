@@ -88,6 +88,11 @@ const HIGHLIGHTS = [
   { icon: Users, title: '社团互助氛围', desc: '学生互助带练,零基础友好,无门槛参与', color: 'accent' },
 ];
 
+const QUICK_LINKS = [
+  { icon: MapPin, title: '健身房地图', desc: '查看全校区健身房位置', href: '/gym-map' },
+  { icon: BookOpen, title: '器材指南', desc: '专业器材使用教程', href: '/equipment' },
+];
+
 // 平台数据
 const PLATFORM_STATS = [
   { value: '200+', label: '累计服务社员', icon: Users },
@@ -233,6 +238,29 @@ export default function HomePage() {
                   <p className="text-xs text-text-secondary leading-relaxed">{h.desc}</p>
                 </div>
               </div>
+            );
+          })}
+        </div>
+
+        {/* 快速入口 */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          {QUICK_LINKS.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.title}
+                href={link.href}
+                className="card p-4 flex items-center gap-3 hover:border-primary transition-colors group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Icon size={18} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-text-primary">{link.title}</h3>
+                  <p className="text-xs text-text-secondary">{link.desc}</p>
+                </div>
+                <ChevronRight size={16} className="text-text-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              </Link>
             );
           })}
         </div>
