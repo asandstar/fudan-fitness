@@ -3,7 +3,7 @@
 // 场馆介绍页
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Dumbbell, Activity, StretchHorizontal, TrendingUp } from 'lucide-react';
+import { Dumbbell, Activity, StretchHorizontal, TrendingUp, ChevronRight, ExternalLink } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { CAMPUS_LABELS } from '@/lib/constants';
 import VenueCard from '@/components/ui/VenueCard';
@@ -25,10 +25,44 @@ const CAMPUS_FILTERS: { value: VenueCampus | 'all'; label: string }[] = [
 ];
 
 const EQUIPMENTS = [
-  { icon: Dumbbell, title: '力量器械', desc: '哑铃、杠铃、综合训练器' },
-  { icon: Activity, title: '有氧设备', desc: '跑步机、椭圆机、动感单车' },
-  { icon: StretchHorizontal, title: '拉伸区', desc: '瑜伽垫、泡沫轴、拉伸架' },
-  { icon: TrendingUp, title: '自由重量', desc: '深蹲架、卧推架' },
+  {
+    icon: Dumbbell,
+    title: '力量器械区',
+    desc: '哑铃、杠铃、龙门架、高位下拉、坐姿推举、腿部推蹬等',
+    detail: '适合增肌、力量提升、塑形训练。建议初学者从固定器械开始,掌握动作规范后再使用自由重量',
+    tags: ['增肌', '力量', '塑形'],
+    source: 'ACSM运动指南建议:每周进行2-3次力量训练,每次训练不同肌群',
+  },
+  {
+    icon: Activity,
+    title: '有氧训练区',
+    desc: '跑步机、椭圆机、动感单车、划船机等心肺训练设备',
+    detail: '适合减脂、心肺功能提升。建议每周进行3-5次,每次30-60分钟中等强度有氧运动',
+    tags: ['减脂', '心肺', '耐力'],
+    source: 'WHO推荐:成年人每周至少进行150分钟中等强度有氧活动',
+  },
+  {
+    icon: StretchHorizontal,
+    title: '拉伸放松区',
+    desc: '瑜伽垫、泡沫轴、筋膜枪、拉伸架等放松恢复设备',
+    detail: '训练前后必须进行10-15分钟拉伸,有效预防受伤、缓解肌肉酸痛、提升柔韧性',
+    tags: ['放松', '柔韧性', '恢复'],
+    source: 'NSCA建议:每次训练前后进行动态热身和静态拉伸',
+  },
+  {
+    icon: TrendingUp,
+    title: '自由重量区',
+    desc: '深蹲架、卧推架、硬拉台、引体向上架等自由训练设备',
+    detail: '适合进阶力量训练者。使用前请确保掌握标准动作,建议在教练指导下进行',
+    tags: ['进阶', '爆发力', '极限'],
+    source: '美国力量与体能协会(NSCA):自由重量训练能最大化刺激肌肉生长',
+  },
+];
+
+const SOURCES = [
+  { name: 'ACSM', fullName: '美国运动医学会', url: 'https://www.acsm.org/', desc: '全球最权威的运动科学与医学专业组织' },
+  { name: 'NSCA', fullName: '美国国家体能协会', url: 'https://www.nsca.com/', desc: '体能训练领域的国际权威机构' },
+  { name: 'WHO', fullName: '世界卫生组织', url: 'https://www.who.int/', desc: '全球公共卫生领域的权威机构' },
 ];
 
 export default function VenuesPage() {
@@ -131,22 +165,63 @@ export default function VenuesPage() {
         </div>
       )}
 
-      {/* 器材指南轻量模块 */}
+      {/* 器材指南详细模块 */}
       <section className="mt-12 pt-8 border-t border-border-light">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">器材指南</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-text-primary">器材指南</h2>
+          <Link href="/equipment" className="text-sm text-primary hover:underline flex items-center gap-1">
+            完整器材手册 <ChevronRight size={14} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {EQUIPMENTS.map((e) => {
             const Icon = e.icon;
             return (
-              <div key={e.title} className="card p-4">
-                <div className="w-8 h-8 rounded-lg bg-primary-50 text-primary flex items-center justify-center mb-2">
-                  <Icon size={14} />
+              <div key={e.title} className="card p-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary-50 text-primary flex items-center justify-center shrink-0">
+                    <Icon size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-medium text-text-primary">{e.title}</h3>
+                      <div className="flex gap-1">
+                        {e.tags.map((tag) => (
+                          <span key={tag} className="px-2 py-0.5 rounded-full bg-primary-50 text-primary text-xs">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-text-secondary mb-2">{e.desc}</p>
+                    <p className="text-xs text-text-tertiary mb-3">{e.detail}</p>
+                    <div className="flex items-center gap-2 text-xs text-info bg-info/10 px-3 py-2 rounded-lg">
+                      <ExternalLink size={12} />
+                      <span>{e.source}</span>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-sm font-medium text-text-primary mb-1">{e.title}</h3>
-                <p className="text-xs text-text-secondary">{e.desc}</p>
               </div>
             );
           })}
+        </div>
+
+        {/* 权威信息源 */}
+        <div className="mt-6 p-5 rounded-lg bg-bg-warm">
+          <h3 className="text-sm font-medium text-text-primary mb-3">参考资料来源</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {SOURCES.map((s) => (
+              <div key={s.name} className="flex items-center gap-3 p-3 rounded-md bg-surface border border-border-light">
+                <div className="w-8 h-8 rounded-lg bg-primary-50 text-primary flex items-center justify-center font-bold text-sm">
+                  {s.name}
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-text-primary">{s.fullName}</div>
+                  <div className="text-xs text-text-tertiary">{s.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

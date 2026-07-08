@@ -28,6 +28,18 @@ export default function VenueCard({ venue, variant = 'bookable', onBook }: Venue
           <h3 className="font-bold text-text-primary text-lg mb-1">{venue.name}</h3>
           <p className="text-xs text-text-tertiary mb-3">{CAMPUS_LABELS[venue.campus]}</p>
           <p className="text-sm text-text-secondary mb-4">{venue.description}</p>
+          
+          {/* 场馆特色 */}
+          {venue.features && venue.features.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {venue.features.map((f) => (
+                <span key={f} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs">
+                  {f}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-1.5 mb-3">
             {venue.facilities.map((f) => (
               <span key={f} className="badge bg-bg-warm text-text-secondary">{f}</span>
@@ -61,41 +73,62 @@ export default function VenueCard({ venue, variant = 'bookable', onBook }: Venue
 
   // bookable
   return (
-    <div className="card p-5 flex flex-col">
-      <div className="flex items-start justify-between mb-2">
-        <div>
+    <div className="card overflow-hidden flex flex-col">
+      {venue.imageUrl && (
+        <div className="relative h-28 bg-gradient-to-br from-primary/20 to-info/20">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={venue.imageUrl} alt={venue.name} className="w-full h-full object-cover" />
+          <span className="absolute top-2 right-2 badge bg-success/90 text-white">可预约</span>
+        </div>
+      )}
+      <div className="p-5 flex flex-col flex-1">
+        <div className="mb-2">
           <h3 className="font-bold text-text-primary text-lg">{venue.name}</h3>
           <p className="text-xs text-text-tertiary mt-0.5 flex items-center gap-1">
             <MapPin size={12} /> {venue.address}
           </p>
         </div>
-        <span className="badge bg-success/30 text-emerald-700">可预约</span>
-      </div>
 
-      <p className="text-sm text-text-secondary mt-2 mb-3">{venue.description}</p>
+        <p className="text-sm text-text-secondary mt-2 mb-3 flex-1">{venue.description}</p>
 
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {venue.facilities.map((f) => (
-          <span key={f} className="badge bg-primary-50 text-primary">{f}</span>
-        ))}
-      </div>
+        {/* 场馆特色 */}
+        {venue.features && venue.features.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {venue.features.map((f) => (
+              <span key={f} className="px-2 py-0.5 rounded-full bg-success/10 text-emerald-700 text-xs">
+                ✓ {f}
+              </span>
+            ))}
+          </div>
+        )}
 
-      <div className="flex items-center justify-between text-xs text-text-tertiary mt-auto pt-3 border-t border-border-light">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1"><Clock size={12} /> {venue.openTime}-{venue.closeTime}</span>
-          <span className="flex items-center gap-1"><Users size={12} /> {venue.capacity}人</span>
+        {/* 器材概览 */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {venue.facilities.slice(0, 4).map((f) => (
+            <span key={f} className="badge bg-primary-50 text-primary text-xs">{f}</span>
+          ))}
+          {venue.facilities.length > 4 && (
+            <span className="badge bg-bg-warm text-text-tertiary text-xs">+{venue.facilities.length - 4}</span>
+          )}
         </div>
-      </div>
 
-      {onBook ? (
-        <button onClick={onBook} className="btn-primary w-full mt-3 text-sm">
-          去预约 <ArrowRight size={14} />
-        </button>
-      ) : (
-        <Link href={`/booking?venue=${venue.id}`} className="btn-primary w-full mt-3 text-sm">
-          去预约 <ArrowRight size={14} />
-        </Link>
-      )}
+        <div className="flex items-center justify-between text-xs text-text-tertiary mt-auto pt-3 border-t border-border-light">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1"><Clock size={12} /> {venue.openTime}-{venue.closeTime}</span>
+            <span className="flex items-center gap-1"><Users size={12} /> {venue.capacity}人</span>
+          </div>
+        </div>
+
+        {onBook ? (
+          <button onClick={onBook} className="btn-primary w-full mt-3 text-sm">
+            去预约 <ArrowRight size={14} />
+          </button>
+        ) : (
+          <Link href={`/booking?venue=${venue.id}`} className="btn-primary w-full mt-3 text-sm">
+            去预约 <ArrowRight size={14} />
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
