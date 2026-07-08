@@ -153,9 +153,74 @@ const RULES = [
   '同一教练同一时段只能被预约一次',
 ];
 
+// 学员评价
+const TESTIMONIALS = [
+  {
+    name: '陈思远',
+    dept: '计算机学院',
+    grade: '2022级',
+    rating: 5,
+    content: '第一次进健身房完全不知所措，幸好预约了新手友好的教练。动作讲解非常细致，现在我已经能独立完成基础训练了！',
+    coach: '张教练',
+    tag: '新手入门',
+  },
+  {
+    name: '林雨萱',
+    dept: '新闻学院',
+    grade: '2023级',
+    rating: 5,
+    content: '女生教练真的很贴心！从器械使用到训练计划都考虑得很周到，训练氛围也很轻松，完全没有尴尬感。',
+    coach: '李教练',
+    tag: '女生友好',
+  },
+  {
+    name: '王浩然',
+    dept: '物理系',
+    grade: '2021级',
+    rating: 4,
+    content: '跟着教练练了两个月，卧推从空杆进步到50kg。教练不仅教动作，还讲了很多训练原理，受益匪浅。',
+    coach: '赵教练',
+    tag: '增肌增力',
+  },
+  {
+    name: '刘子琪',
+    dept: '管理学院',
+    grade: '2022级',
+    rating: 5,
+    content: '预约系统很方便，可以选择自己校区附近的健身房。教练会根据我的课表灵活安排时间，真的很适合学生党。',
+    coach: '周教练',
+    tag: '灵活预约',
+  },
+];
+
+// FAQ
+const FAQS = [
+  {
+    q: '我完全没有健身经验，可以预约教练吗？',
+    a: '当然可以！平台专为新手设计，所有教练都经过认证审核。建议预约带「新手友好」标签的教练，他们会从基础动作开始耐心指导。',
+  },
+  {
+    q: '预约带练需要收费吗？',
+    a: '本社为校内学生互助社团，带练服务完全免费。只需遵守预约规则，珍惜教练时间即可。',
+  },
+  {
+    q: '临时有事不能去训练，怎么取消？',
+    a: '开课前24小时可免费取消，不影响信用。24小时内取消将记违约一次，累计3次将禁约30天。',
+  },
+  {
+    q: '女生可以指定女教练吗？',
+    a: '可以。在教练筛选中选择「女生教练」，或预约时在备注中说明即可。平台有多位认证女生教练。',
+  },
+  {
+    q: '我想成为认证教练，需要什么条件？',
+    a: '在本校就读的健身爱好者均可申请。需在个人中心提交申请，填写擅长领域和带练风格，管理员审核通过后即可成为认证教练。',
+  },
+];
+
 export default function HomePage() {
   const { venues, coaches, announcements, currentUser } = useApp();
   const [coachFilter, setCoachFilter] = useState<typeof COACH_FILTERS[number]['key']>('all');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const router = useRouter();
 
   const handleBookCoach = (coachId: string) => {
@@ -474,6 +539,38 @@ export default function HomePage() {
         </p>
       </section>
 
+      {/* 10.5 学员评价 */}
+      <section className="bg-bg-warm/50 py-10">
+        <div className="max-w-content mx-auto px-6">
+          <h2 className="section-title">学员反馈</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="card p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-light text-white flex items-center justify-center font-bold text-sm">
+                      {t.name[0]}
+                    </div>
+                    <div>
+                      <div className="font-medium text-text-primary text-sm">{t.name}</div>
+                      <div className="text-xs text-text-tertiary">{t.dept} · {t.grade}</div>
+                    </div>
+                  </div>
+                  <span className="badge bg-primary-50 text-primary text-xs">{t.tag}</span>
+                </div>
+                <div className="flex items-center gap-0.5 mb-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={12} className={i < t.rating ? 'text-warning fill-warning' : 'text-text-tertiary'} />
+                  ))}
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed">"{t.content}"</p>
+                <p className="text-xs text-text-tertiary mt-2">—— 教练 {t.coach} 带练</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 11. 预约规则 */}
       <section className="max-w-content mx-auto px-6 py-10">
         <h2 className="section-title">预约规则</h2>
@@ -493,6 +590,32 @@ export default function HomePage() {
               我已了解,去预约 <ArrowRight size={14} />
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* 11.5 常见问题 */}
+      <section className="max-w-content mx-auto px-6 py-10">
+        <h2 className="section-title">常见问题</h2>
+        <div className="space-y-2">
+          {FAQS.map((faq, i) => (
+            <div key={i} className="card overflow-hidden">
+              <button
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-bg-warm/50 transition-colors"
+              >
+                <span className="font-medium text-text-primary text-sm">{faq.q}</span>
+                <ChevronRight
+                  size={16}
+                  className={`text-text-tertiary transition-transform shrink-0 ml-2 ${openFaq === i ? 'rotate-90' : ''}`}
+                />
+              </button>
+              {openFaq === i && (
+                <div className="px-4 pb-4 text-sm text-text-secondary leading-relaxed animate-fade-in">
+                  {faq.a}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </section>
 
