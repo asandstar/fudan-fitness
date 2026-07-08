@@ -7,6 +7,7 @@ import { Dumbbell, Activity, StretchHorizontal, TrendingUp, ChevronRight, Extern
 import { useApp } from '@/context/AppContext';
 import { CAMPUS_LABELS } from '@/lib/constants';
 import VenueCard from '@/components/ui/VenueCard';
+import VenueHeatmap from '@/components/ui/VenueHeatmap';
 import type { VenueCampus } from '@/lib/types';
 
 const TABS = [
@@ -164,6 +165,11 @@ export default function VenuesPage() {
           该筛选条件下暂无场馆
         </div>
       )}
+
+      {/* 场馆人流热力图 */}
+      <section className="mb-10">
+        <VenueHeatmap venues={venues} />
+      </section>
 
       {/* 器材指南详细模块 */}
       <section className="mt-12 pt-8 border-t border-border-light">

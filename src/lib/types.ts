@@ -38,6 +38,7 @@ export interface User {
   violationCount: number;
   bannedUntil: string | null; // ISO 字符串
   createdAt: string;
+  favoriteCoaches?: string[]; // 收藏的教练ID列表
 }
 
 // 场馆
@@ -202,4 +203,16 @@ export interface TrainingStats {
   currentStreak: number;     // 当前连续打卡天数
   longestStreak: number;     // 最长连续打卡天数
   weeklyData: { day: string; count: number }[];
+}
+
+// 训练日记
+export interface TrainingDiary {
+  id: string;
+  userId: string;
+  date: string;
+  content: string;
+  mood?: 'great' | 'good' | 'normal' | 'tired' | 'bad';
+  weight?: number;
+  achievements?: string[];
+  createdAt: string;
 }
