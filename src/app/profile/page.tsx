@@ -393,6 +393,21 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* 训练数据可视化：饼图 + 本月日历 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* 训练类型分布饼图 */}
+            <div className="p-4 rounded-lg bg-bg-warm">
+              <div className="text-xs font-medium text-text-secondary mb-3">训练类型分布</div>
+              <TrainingTypePieChart records={userTrainingRecords} />
+            </div>
+
+            {/* 本月训练日历 */}
+            <div className="p-4 rounded-lg bg-bg-warm">
+              <div className="text-xs font-medium text-text-secondary mb-3">本月训练日历</div>
+              <MonthlyCalendar records={userTrainingRecords} />
+            </div>
+          </div>
+
           {/* 本周打卡日历 */}
           <div className="p-4 rounded-lg bg-bg-warm">
             <div className="text-xs font-medium text-text-secondary mb-3">本周训练分布</div>
@@ -929,5 +944,160 @@ function TrainingCheckInModal({ open, onClose, onCheckIn, completedAppointments 
         </div>
       </div>
     </Modal>
+  );
+}
+
+function TrainingTypePieChart({ records }: { records: TrainingRecord[] }) {
+  const typeCount: Record<string, number> = {};
+  records.forEach((r) => {
+    typeCount[r.workoutType] = (typeCount[r.workoutType] || 0) + 1;
+  });
+
+  const types = Object.entries(typeCount).sort((a, b) => b[1] - a[1]);
+  const total = records.length;
+
+  const COLORS = [
+    '#3b82f6',
+    '#10b981',
+    '#f59e0b',
+    '#ef4444',
+    '#8b5cf6',
+    '#ec4899',
+    '#06b6d4',
+  ];
+
+  if (total === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-6 text-text-tertiary text-xs">
+        <Dumbbell size={32} className="mb-2 opacity-30" />
+        暂无训练记录
+      </div>
+    );
+  }
+
+  let cumulative = 0;
+  const gradientStops = types.map(([type, count], i) => {
+    const start = (cumulative / total) * 360;
+    cumulative += count;
+    const end = (cumulative / total) * 360;
+    return `${COLORS[i % COLORS.length]} ${start}deg ${end}deg`;
+  });
+
+  return (
+    <div className="flex items-center gap-4">
+      <div
+        className="w-24 h-24 rounded-full shrink-0 relative"
+        style={{
+          background: `conic-gradient(${gradientStops.join(', ')})`,
+        }}
+      >
+        <div className="absolute inset-2 rounded-full bg-bg-warm flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-lg font-bold text-text-primary">{total}</div>
+            <div className="text-[10px] text-text-tertiary">总次数</div>
+          </div>
+        </div>
+      </div>
+      <div className="flex-1 space-y-1.5 min-w-0">
+        {types.slice(0, 4).map(([type, count], i) => (
+          <div key={type} className="flex items-center gap-2 text-xs">
+            <div
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: COLORS[i % COLORS.length] }}
+            />
+            <span className="text-text-secondary truncate">{type}</span>
+            <span className="text-text-tertiary ml-auto">{count}次</span>
+          </div>
+        ))}
+        {types.length > 4 && (
+          <div className="text-[10px] text-text-tertiary">
+            还有 {types.length - 4} 种类型
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MonthlyCalendar({ records }: { records: TrainingRecord[] }) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDayOfWeek = firstDay.getDay();
+  const daysInMonth = lastDay.getDate();
+
+  const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+
+  const recordDates = new Set(records.map((r) => r.date));
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < startDayOfWeek; i++) {
+    cells.push(null);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push(d);
+  }
+
+  const formatDate = (day: number) => {
+    const m = String(month + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    return `${year}-${m}-${d}`;
+  };
+
+  const todayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  return (
+    <div>
+      <div className="text-center text-sm font-medium text-text-primary mb-2">
+        {year}年{month + 1}月
+      </div>
+      <div className="grid grid-cols-7 gap-0.5 mb-1">
+        {WEEKDAYS.map((d) => (
+          <div key={d} className="text-center text-[10px] text-text-tertiary py-1">
+            {d}
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-0.5">
+        {cells.map((day, i) => {
+          if (day === null) {
+            return <div key={i} className="aspect-square" />;
+          }
+          const dateStr = formatDate(day);
+          const hasRecord = recordDates.has(dateStr);
+          const isToday = dateStr === todayStr;
+          const isFuture = day > today.getDate();
+
+          return (
+            <div
+              key={i}
+              className={`aspect-square rounded-sm flex items-center justify-center text-[10px] font-medium transition-all ${
+                hasRecord
+                  ? 'bg-success text-white'
+                  : isToday
+                  ? 'bg-primary/10 text-primary border border-primary/30'
+                  : isFuture
+                  ? 'text-text-tertiary/40'
+                  : 'text-text-tertiary bg-surface'
+              }`}
+            >
+              {day}
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex items-center justify-center gap-3 text-[10px] text-text-tertiary">
+        <div className="flex items-center gap-1">
+          <div className="w-2.5 h-2.5 rounded-sm bg-success" />
+          <span>已训练</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-2.5 h-2.5 rounded-sm bg-primary/10 border border-primary/30" />
+          <span>今天</span>
+        </div>
+      </div>
+    </div>
   );
 }

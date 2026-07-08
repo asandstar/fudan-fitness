@@ -732,19 +732,144 @@ export const mockCoaches: CoachProfile[] = [
   },
 ];
 
-// ========== 教练可用时段(10 条,日期动态) ==========
-// 保持文档的相对关系:s1/s2=今天+1, s3/s4=今天+2, s5=今天, s6=今天+2, s7=今天+3, s8=今天+1, s9=今天+3, s10=今天+3
+// ========== 教练可用时段(90+ 条,日期动态) ==========
+// 覆盖8位认证教练、4个可预约场馆、未来14天、早中晚多时段
 export const mockSlots: CoachSlot[] = [
-  { id: 's1', coachId: 'c1', venueId: 'v1', date: day(1), startTime: '14:00', endTime: '15:00', isAvailable: true },
-  { id: 's2', coachId: 'c1', venueId: 'v1', date: day(1), startTime: '16:00', endTime: '17:00', isAvailable: true },
-  { id: 's3', coachId: 'c2', venueId: 'v1', date: day(2), startTime: '10:00', endTime: '11:00', isAvailable: true },
-  { id: 's4', coachId: 'c2', venueId: 'v2', date: day(2), startTime: '14:00', endTime: '15:00', isAvailable: true },
-  { id: 's5', coachId: 'c3', venueId: 'v1', date: day(0), startTime: '19:00', endTime: '20:00', isAvailable: true },
-  { id: 's6', coachId: 'c3', venueId: 'v3', date: day(2), startTime: '16:00', endTime: '17:00', isAvailable: true },
-  { id: 's7', coachId: 'c4', venueId: 'v2', date: day(3), startTime: '08:00', endTime: '09:00', isAvailable: true },
-  { id: 's8', coachId: 'c5', venueId: 'v1', date: day(1), startTime: '10:00', endTime: '11:00', isAvailable: true },
-  { id: 's9', coachId: 'c5', venueId: 'v3', date: day(3), startTime: '14:00', endTime: '15:00', isAvailable: true },
-  { id: 's10', coachId: 'c1', venueId: 'v2', date: day(3), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  // ===== 教练c1 张明 (南区v1 + 北区v2 + 江湾v4, 力量训练+新手友好) =====
+  { id: 's1', coachId: 'c1', venueId: 'v1', date: day(0), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's2', coachId: 'c1', venueId: 'v1', date: day(0), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's3', coachId: 'c1', venueId: 'v1', date: day(0), startTime: '19:00', endTime: '20:00', isAvailable: false },
+  { id: 's4', coachId: 'c1', venueId: 'v1', date: day(1), startTime: '09:00', endTime: '10:00', isAvailable: true },
+  { id: 's5', coachId: 'c1', venueId: 'v1', date: day(1), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's6', coachId: 'c1', venueId: 'v2', date: day(2), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's7', coachId: 'c1', venueId: 'v2', date: day(2), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's8', coachId: 'c1', venueId: 'v1', date: day(3), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's9', coachId: 'c1', venueId: 'v1', date: day(4), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's10', coachId: 'c1', venueId: 'v2', date: day(5), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's11', coachId: 'c1', venueId: 'v1', date: day(6), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's101', coachId: 'c1', venueId: 'v1', date: day(7), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's102', coachId: 'c1', venueId: 'v2', date: day(9), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's103', coachId: 'c1', venueId: 'v1', date: day(10), startTime: '19:00', endTime: '20:00', isAvailable: false },
+  { id: 's104', coachId: 'c1', venueId: 'v4', date: day(1), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's105', coachId: 'c1', venueId: 'v4', date: day(3), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's106', coachId: 'c1', venueId: 'v4', date: day(6), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's107', coachId: 'c1', venueId: 'v4', date: day(10), startTime: '15:00', endTime: '16:00', isAvailable: true },
+
+  // ===== 教练c2 李晓燕 (南区v1 + 北区v2, 女生友好+有氧减脂) =====
+  { id: 's12', coachId: 'c2', venueId: 'v2', date: day(0), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's13', coachId: 'c2', venueId: 'v2', date: day(0), startTime: '16:00', endTime: '17:00', isAvailable: false },
+  { id: 's14', coachId: 'c2', venueId: 'v1', date: day(1), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's15', coachId: 'c2', venueId: 'v1', date: day(1), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's16', coachId: 'c2', venueId: 'v2', date: day(3), startTime: '09:00', endTime: '10:00', isAvailable: true },
+  { id: 's17', coachId: 'c2', venueId: 'v2', date: day(3), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's18', coachId: 'c2', venueId: 'v1', date: day(4), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's19', coachId: 'c2', venueId: 'v1', date: day(5), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's20', coachId: 'c2', venueId: 'v2', date: day(6), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's108', coachId: 'c2', venueId: 'v1', date: day(7), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's109', coachId: 'c2', venueId: 'v2', date: day(8), startTime: '14:00', endTime: '15:00', isAvailable: false },
+  { id: 's110', coachId: 'c2', venueId: 'v1', date: day(10), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's111', coachId: 'c2', venueId: 'v2', date: day(12), startTime: '19:00', endTime: '20:00', isAvailable: true },
+
+  // ===== 教练c3 王浩 (南区v1 + 工会v3 + 江湾v4, 力量训练+增肌) =====
+  { id: 's21', coachId: 'c3', venueId: 'v1', date: day(0), startTime: '18:00', endTime: '19:00', isAvailable: false },
+  { id: 's22', coachId: 'c3', venueId: 'v3', date: day(1), startTime: '12:00', endTime: '13:00', isAvailable: true },
+  { id: 's23', coachId: 'c3', venueId: 'v3', date: day(1), startTime: '18:00', endTime: '19:00', isAvailable: true },
+  { id: 's24', coachId: 'c3', venueId: 'v1', date: day(2), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's25', coachId: 'c3', venueId: 'v3', date: day(3), startTime: '12:00', endTime: '13:00', isAvailable: true },
+  { id: 's26', coachId: 'c3', venueId: 'v1', date: day(4), startTime: '18:00', endTime: '19:00', isAvailable: true },
+  { id: 's27', coachId: 'c3', venueId: 'v3', date: day(5), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's28', coachId: 'c3', venueId: 'v1', date: day(6), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's112', coachId: 'c3', venueId: 'v1', date: day(7), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's113', coachId: 'c3', venueId: 'v3', date: day(8), startTime: '12:00', endTime: '13:00', isAvailable: false },
+  { id: 's114', coachId: 'c3', venueId: 'v1', date: day(9), startTime: '18:00', endTime: '19:00', isAvailable: true },
+  { id: 's115', coachId: 'c3', venueId: 'v3', date: day(11), startTime: '18:00', endTime: '19:00', isAvailable: true },
+  { id: 's116', coachId: 'c3', venueId: 'v4', date: day(0), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's117', coachId: 'c3', venueId: 'v4', date: day(4), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's118', coachId: 'c3', venueId: 'v4', date: day(6), startTime: '16:00', endTime: '17:00', isAvailable: false },
+  { id: 's119', coachId: 'c3', venueId: 'v4', date: day(11), startTime: '10:00', endTime: '11:00', isAvailable: true },
+
+  // ===== 教练c4 陈思怡 (北区v2, 有氧拉伸+女生友好) =====
+  { id: 's29', coachId: 'c4', venueId: 'v2', date: day(1), startTime: '08:00', endTime: '09:00', isAvailable: true },
+  { id: 's30', coachId: 'c4', venueId: 'v2', date: day(2), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's31', coachId: 'c4', venueId: 'v2', date: day(4), startTime: '09:00', endTime: '10:00', isAvailable: true },
+  { id: 's32', coachId: 'c4', venueId: 'v2', date: day(5), startTime: '15:00', endTime: '16:00', isAvailable: false },
+  { id: 's33', coachId: 'c4', venueId: 'v2', date: day(6), startTime: '09:00', endTime: '10:00', isAvailable: true },
+  { id: 's120', coachId: 'c4', venueId: 'v2', date: day(7), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's121', coachId: 'c4', venueId: 'v2', date: day(9), startTime: '08:00', endTime: '09:00', isAvailable: true },
+  { id: 's122', coachId: 'c4', venueId: 'v2', date: day(10), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's123', coachId: 'c4', venueId: 'v2', date: day(12), startTime: '09:00', endTime: '10:00', isAvailable: false },
+  { id: 's124', coachId: 'c4', venueId: 'v2', date: day(13), startTime: '16:00', endTime: '17:00', isAvailable: true },
+
+  // ===== 教练c5 赵宇航 (南区v1 + 工会v3, 力量训练+新手友好) =====
+  { id: 's34', coachId: 'c5', venueId: 'v1', date: day(1), startTime: '10:00', endTime: '11:00', isAvailable: false },
+  { id: 's35', coachId: 'c5', venueId: 'v3', date: day(2), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's36', coachId: 'c5', venueId: 'v1', date: day(3), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's37', coachId: 'c5', venueId: 'v3', date: day(4), startTime: '12:00', endTime: '13:00', isAvailable: true },
+  { id: 's38', coachId: 'c5', venueId: 'v1', date: day(5), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's39', coachId: 'c5', venueId: 'v1', date: day(6), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's125', coachId: 'c5', venueId: 'v3', date: day(7), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's126', coachId: 'c5', venueId: 'v1', date: day(8), startTime: '10:00', endTime: '11:00', isAvailable: false },
+  { id: 's127', coachId: 'c5', venueId: 'v1', date: day(10), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's128', coachId: 'c5', venueId: 'v3', date: day(12), startTime: '12:00', endTime: '13:00', isAvailable: true },
+
+  // ===== 教练c6 孙雨萱 (南区v1 + 北区v2, 瑜伽+冥想+女生友好) =====
+  { id: 's40', coachId: 'c6', venueId: 'v1', date: day(0), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's129', coachId: 'c6', venueId: 'v2', date: day(1), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's130', coachId: 'c6', venueId: 'v2', date: day(1), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's131', coachId: 'c6', venueId: 'v1', date: day(2), startTime: '14:00', endTime: '15:00', isAvailable: false },
+  { id: 's132', coachId: 'c6', venueId: 'v1', date: day(3), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's133', coachId: 'c6', venueId: 'v2', date: day(4), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's134', coachId: 'c6', venueId: 'v1', date: day(5), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's135', coachId: 'c6', venueId: 'v2', date: day(6), startTime: '10:00', endTime: '11:00', isAvailable: false },
+  { id: 's136', coachId: 'c6', venueId: 'v1', date: day(7), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's137', coachId: 'c6', venueId: 'v2', date: day(9), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's138', coachId: 'c6', venueId: 'v1', date: day(11), startTime: '10:00', endTime: '11:00', isAvailable: true },
+
+  // ===== 教练c7 林晨宇 (南区v1 + 工会v3, HIIT+功能性训练) =====
+  { id: 's139', coachId: 'c7', venueId: 'v1', date: day(0), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's140', coachId: 'c7', venueId: 'v3', date: day(1), startTime: '18:00', endTime: '19:00', isAvailable: true },
+  { id: 's141', coachId: 'c7', venueId: 'v1', date: day(2), startTime: '10:00', endTime: '11:00', isAvailable: false },
+  { id: 's142', coachId: 'c7', venueId: 'v1', date: day(3), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's143', coachId: 'c7', venueId: 'v3', date: day(4), startTime: '18:00', endTime: '19:00', isAvailable: true },
+  { id: 's144', coachId: 'c7', venueId: 'v1', date: day(5), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's145', coachId: 'c7', venueId: 'v1', date: day(6), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's146', coachId: 'c7', venueId: 'v3', date: day(7), startTime: '18:00', endTime: '19:00', isAvailable: false },
+  { id: 's147', coachId: 'c7', venueId: 'v1', date: day(8), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's148', coachId: 'c7', venueId: 'v1', date: day(10), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's149', coachId: 'c7', venueId: 'v3', date: day(12), startTime: '18:00', endTime: '19:00', isAvailable: true },
+
+  // ===== 教练c8 钱梦瑶 (北区v2, 普拉提+核心+体态矫正+女生友好) =====
+  { id: 's150', coachId: 'c8', venueId: 'v2', date: day(1), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's151', coachId: 'c8', venueId: 'v2', date: day(2), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's152', coachId: 'c8', venueId: 'v2', date: day(3), startTime: '16:00', endTime: '17:00', isAvailable: false },
+  { id: 's153', coachId: 'c8', venueId: 'v2', date: day(4), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's154', coachId: 'c8', venueId: 'v2', date: day(5), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's155', coachId: 'c8', venueId: 'v2', date: day(6), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's156', coachId: 'c8', venueId: 'v2', date: day(8), startTime: '16:00', endTime: '17:00', isAvailable: true },
+  { id: 's157', coachId: 'c8', venueId: 'v2', date: day(9), startTime: '10:00', endTime: '11:00', isAvailable: false },
+  { id: 's158', coachId: 'c8', venueId: 'v2', date: day(11), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's159', coachId: 'c8', venueId: 'v2', date: day(13), startTime: '10:00', endTime: '11:00', isAvailable: true },
+
+  // ===== 教练c6 孙雨萱 江湾v4 时段 =====
+  { id: 's41', coachId: 'c6', venueId: 'v4', date: day(2), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's42', coachId: 'c6', venueId: 'v4', date: day(2), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's43', coachId: 'c6', venueId: 'v1', date: day(4), startTime: '19:00', endTime: '20:00', isAvailable: false },
+  { id: 's44', coachId: 'c6', venueId: 'v4', date: day(5), startTime: '09:00', endTime: '10:00', isAvailable: true },
+  { id: 's45', coachId: 'c6', venueId: 'v4', date: day(5), startTime: '15:00', endTime: '16:00', isAvailable: true },
+  { id: 's46', coachId: 'c6', venueId: 'v1', date: day(6), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's160', coachId: 'c6', venueId: 'v4', date: day(9), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's161', coachId: 'c6', venueId: 'v4', date: day(12), startTime: '14:00', endTime: '15:00', isAvailable: false },
+
+  // ===== 教练c2 李晓燕 江湾v4 时段 =====
+  { id: 's162', coachId: 'c2', venueId: 'v4', date: day(1), startTime: '14:00', endTime: '15:00', isAvailable: true },
+  { id: 's163', coachId: 'c2', venueId: 'v4', date: day(5), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's164', coachId: 'c2', venueId: 'v4', date: day(8), startTime: '15:00', endTime: '16:00', isAvailable: false },
+  { id: 's165', coachId: 'c2', venueId: 'v4', date: day(11), startTime: '10:00', endTime: '11:00', isAvailable: true },
+
+  // ===== 教练c7 林晨宇 江湾v4 时段 =====
+  { id: 's166', coachId: 'c7', venueId: 'v4', date: day(3), startTime: '19:00', endTime: '20:00', isAvailable: true },
+  { id: 's167', coachId: 'c7', venueId: 'v4', date: day(7), startTime: '10:00', endTime: '11:00', isAvailable: true },
+  { id: 's168', coachId: 'c7', venueId: 'v4', date: day(10), startTime: '19:00', endTime: '20:00', isAvailable: false },
 ];
 
 // ========== 预约记录(6 条,覆盖全部状态,日期动态) ==========
@@ -879,7 +1004,13 @@ export const mockViolations: ViolationRecord[] = [
 // ========== 一键登录账号清单(登录页展示) ==========
 export const QUICK_LOGIN_ACCOUNTS = [
   { studentId: '22300110001', password: 'password123', label: '学员·刘小明', desc: '普通社员,已预约2次' },
-  { studentId: '22300150002', password: 'password123', label: '教练·张明', desc: '认证教练,有1条待审核' },
+  { studentId: '22300150002', password: 'password123', label: '教练·张明', desc: '认证教练,力量训练专家' },
   { studentId: '22300060009', password: 'password123', label: '学员·吴雨桐', desc: '被禁约(测试禁约提示)' },
   { studentId: '00000000000', password: 'admin123', label: '管理员', desc: '后台全部权限' },
+  { studentId: '22300210019', password: 'password123', label: '女生学员·陈雅婷', desc: '常预约女生教练,10次训练' },
+  { studentId: '22300100008', password: 'password123', label: '新手学员·林浩然', desc: '零基础,0次训练' },
+  { studentId: '22300250015', password: 'password123', label: '江湾学员·许佳音', desc: '江湾校区,常去江湾健身房' },
+  { studentId: '22300090018', password: 'password123', label: '健身达人·梁文博', desc: '15次训练,连续打卡7天' },
+  { studentId: '22300180011', password: 'password123', label: '瑜伽爱好者·黄丽雯', desc: '主要预约瑜伽/普拉提' },
+  { studentId: '22300280017', password: 'password123', label: '减脂学员·钱梦瑶', desc: '正在减脂,以有氧训练为主' },
 ];

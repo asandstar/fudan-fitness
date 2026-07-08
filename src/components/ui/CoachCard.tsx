@@ -1,14 +1,16 @@
 'use client';
 
 // 教练卡片 — 含评分星级和评价摘要
-import { BadgeCheck, Sparkles, Users as UsersIcon, Star } from 'lucide-react';
+import { BadgeCheck, Sparkles, Users as UsersIcon, Star, Heart } from 'lucide-react';
 import type { CoachProfile } from '@/lib/types';
 import { avatarInitial } from '@/lib/utils';
+import { useApp } from '@/context/AppContext';
 
 interface CoachCardProps {
   coach: CoachProfile;
   onBook?: (coachId: string) => void;
   compact?: boolean;
+  showFavorite?: boolean;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -26,14 +28,33 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export default function CoachCard({ coach, onBook, compact }: CoachCardProps) {
+export default function CoachCard({ coach, onBook, compact, showFavorite = true }: CoachCardProps) {
+  const { isCoachFavorited, toggleFavoriteCoach, currentUser } = useApp();
+  const isFavorited = isCoachFavorited(coach.id);
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavoriteCoach(coach.id);
+  };
+
   return (
-    <div className="card p-5 flex flex-col">
+    <div className="card p-5 flex flex-col relative">
+      {showFavorite && currentUser && currentUser.role === 'member' && (
+        <button
+          onClick={handleFavorite}
+          className="absolute top-3 right-3 p-1.5 rounded-full transition-all hover:scale-110 z-10"
+        >
+          <Heart
+            size={18}
+            className={isFavorited ? 'text-danger fill-danger' : 'text-text-tertiary hover:text-danger'}
+          />
+        </button>
+      )}
       <div className="flex items-start gap-3 mb-3">
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-light text-white flex items-center justify-center font-bold text-lg shrink-0">
           {avatarInitial(coach.name)}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-6">
           <div className="flex items-center gap-1">
             <h3 className="font-bold text-text-primary truncate">{coach.name}</h3>
             {coach.certStatus === 'approved' && (

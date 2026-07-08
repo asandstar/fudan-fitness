@@ -91,6 +91,10 @@ interface AppContextValue {
   addTrainingRecord: (record: Omit<TrainingRecord, 'id' | 'createdAt'>) => void;
   getTrainingStats: (userId: string) => TrainingStats;
 
+  // 收藏教练
+  toggleFavoriteCoach: (coachId: string) => void;
+  isCoachFavorited: (coachId: string) => boolean;
+
   // 模拟 cron:进入页面时扫描过期 pending
   sweepExpired: () => void;
 }
@@ -578,6 +582,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   }, [trainingRecords]);
 
+  // ===== 收藏/取消收藏教练 =====
+  const toggleFavoriteCoach = useCallback((coachId: string) => {
+    if (!currentUser) return;
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id !== currentUser.id) return u;
+        const favorites = u.favoriteCoaches || [];
+        const newFavorites = favorites.includes(coachId)
+          ? favorites.filter((id) => id !== coachId)
+          : [...favorites, coachId];
+        return { ...u, favoriteCoaches: newFavorites };
+      }),
+    );
+  }, [currentUser]);
+
+  const isCoachFavorited = useCallback((coachId: string): boolean => {
+    if (!currentUser) return false;
+    return currentUser.favoriteCoaches?.includes(coachId) || false;
+  }, [currentUser]);
+
   const value: AppContextValue = {
     users,
     venues,
@@ -613,6 +637,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     getUnreadCount,
     addTrainingRecord,
     getTrainingStats,
+    toggleFavoriteCoach,
+    isCoachFavorited,
     sweepExpired,
   };
 
