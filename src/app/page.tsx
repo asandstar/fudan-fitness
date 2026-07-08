@@ -37,10 +37,38 @@ const FRIENDLY_SUPPORTS = [
 ];
 
 const EQUIPMENTS = [
-  { icon: DumbbellIcon, title: '力量器械', desc: '哑铃、杠铃、综合训练器,适合增肌和力量训练' },
-  { icon: Activity, title: '有氧设备', desc: '跑步机、椭圆机、动感单车,适合减脂和心肺训练' },
-  { icon: StretchHorizontal, title: '拉伸区', desc: '瑜伽垫、泡沫轴、拉伸架,训练前后放松必备' },
-  { icon: TrendingUp, title: '自由重量', desc: '深蹲架、卧推架,适合进阶力量训练者' },
+  {
+    icon: DumbbellIcon,
+    title: '力量器械区',
+    desc: '哑铃、杠铃、龙门架、高位下拉、坐姿推举、腿部推蹬等综合训练器',
+    detail: '适合增肌、力量提升、塑形训练。建议初学者从固定器械开始,掌握动作规范后再使用自由重量',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=gym%20weight%20training%20equipment%20dumbbells%20barbells%20cable%20machine%20professional%20fitness&image_size=square',
+    tags: ['增肌', '力量', '塑形'],
+  },
+  {
+    icon: Activity,
+    title: '有氧训练区',
+    desc: '跑步机、椭圆机、动感单车、划船机等心肺训练设备',
+    detail: '适合减脂、心肺功能提升。建议每周进行3-5次,每次30-60分钟中等强度有氧运动',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=gym%20cardio%20equipment%20treadmills%20elliptical%20stationary%20bike%20clean%20modern&image_size=square',
+    tags: ['减脂', '心肺', '耐力'],
+  },
+  {
+    icon: StretchHorizontal,
+    title: '拉伸放松区',
+    desc: '瑜伽垫、泡沫轴、筋膜枪、拉伸架等放松恢复设备',
+    detail: '训练前后必须进行10-15分钟拉伸,有效预防受伤、缓解肌肉酸痛、提升柔韧性',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=yoga%20stretching%20area%20yoga%20mats%20foam%20rollers%20relaxation%20peaceful%20gym&image_size=square',
+    tags: ['放松', '柔韧性', '恢复'],
+  },
+  {
+    icon: TrendingUp,
+    title: '自由重量区',
+    desc: '深蹲架、卧推架、硬拉台、引体向上架等自由训练设备',
+    detail: '适合进阶力量训练者。使用前请确保掌握标准动作,建议在教练指导下进行',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=free%20weight%20gym%20area%20squat%20rack%20bench%20press%20power%20lifting%20professional&image_size=square',
+    tags: ['进阶', '爆发力', '极限'],
+  },
 ];
 
 const RULES = [
@@ -91,7 +119,9 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/hero-main.jpg')" }}
+          style={{
+            backgroundImage: "url('https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20university%20fitness%20gym%20interior%20with%20students%20working%20out%20clean%20bright%20professional%20equipment%20dumbbells%20treadmills%20warm%20lighting%20campus%20environment&image_size=landscape_16_9')",
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
         <div className="relative max-w-content mx-auto px-6 py-20 md:py-28">
@@ -237,17 +267,42 @@ export default function HomePage() {
       {/* 7. 器材指南 */}
       <section className="bg-bg-warm/50 py-12">
         <div className="max-w-content mx-auto px-6">
-          <h2 className="section-title">器材指南</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="section-title">器材指南</h2>
+            <Link href="/equipment" className="text-sm text-primary hover:underline flex items-center gap-1">
+              查看详细 <ChevronRight size={14} />
+            </Link>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {EQUIPMENTS.map((e) => {
               const Icon = e.icon;
               return (
-                <div key={e.title} className="card p-5">
-                  <div className="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center mb-3">
-                    <Icon size={18} />
+                <div key={e.title} className="card overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="relative h-32 overflow-hidden">
+                    <img
+                      src={e.image}
+                      alt={e.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-3 left-3 flex gap-1">
+                      {e.tags.map((tag) => (
+                        <span key={tag} className="px-2 py-0.5 rounded-full bg-white/20 text-white text-xs backdrop-blur">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <h3 className="font-medium text-text-primary mb-1">{e.title}</h3>
-                  <p className="text-sm text-text-secondary">{e.desc}</p>
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary-50 text-primary flex items-center justify-center">
+                        <Icon size={16} />
+                      </div>
+                      <h3 className="font-medium text-text-primary">{e.title}</h3>
+                    </div>
+                    <p className="text-sm text-text-secondary mb-2">{e.desc}</p>
+                    <p className="text-xs text-text-tertiary line-clamp-2">{e.detail}</p>
+                  </div>
                 </div>
               );
             })}

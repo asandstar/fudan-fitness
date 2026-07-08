@@ -54,6 +54,7 @@ export interface Venue {
   bookable: boolean;
   displayOrder: number;
   imageUrl?: string;
+  features?: string[];
 }
 
 // 教练资料
