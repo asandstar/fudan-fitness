@@ -182,7 +182,7 @@ export default function HomePage() {
     { campus: 'handan-south', bookable: true },
     { campus: 'handan-north', bookable: true },
     { campus: 'wuliu', bookable: true },
-    { campus: 'jiangwan', bookable: false },
+    { campus: 'jiangwan', bookable: true },
     { campus: 'fenglin', bookable: false },
     { campus: 'zhangjiang', bookable: false },
   ];

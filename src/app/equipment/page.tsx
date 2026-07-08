@@ -53,6 +53,10 @@ const STRENGTH_EQUIPMENTS = [
     usage: '站姿或坐姿进行弯举、侧平举、肩推、卧推、深蹲等多种动作',
     tips: '选择合适重量,建议每组8-12次,完成3-4组',
     safety: '训练时注意保持核心稳定,避免耸肩',
+    weightRange: '2-30kg',
+    setsReps: '3-4组 x 8-12次',
+    targetMuscles: '全身肌群',
+    difficulty: '新手',
   },
   {
     name: '杠铃',
@@ -60,6 +64,10 @@ const STRENGTH_EQUIPMENTS = [
     usage: '进行深蹲、卧推、硬拉、站姿推举等复合动作',
     tips: '建议在有经验的教练指导下开始使用',
     safety: '使用时确保有保护者在场,注意动作规范',
+    weightRange: '空杆20kg起',
+    setsReps: '3-5组 x 5-8次',
+    targetMuscles: '全身复合肌群',
+    difficulty: '进阶',
   },
   {
     name: '龙门架/绳索训练器',
@@ -67,6 +75,10 @@ const STRENGTH_EQUIPMENTS = [
     usage: '下拉、划船、夹胸、弯举、侧平举等多种动作',
     tips: '调整滑轮高度可以改变训练角度和难度',
     safety: '使用前检查绳索和滑轮是否正常',
+    weightRange: '插片式可调',
+    setsReps: '3组 x 10-15次',
+    targetMuscles: '胸、背、肩、手臂',
+    difficulty: '新手',
   },
   {
     name: '高位下拉机',
@@ -74,6 +86,10 @@ const STRENGTH_EQUIPMENTS = [
     usage: '坐姿进行宽握或窄握下拉训练背阔肌',
     tips: '下拉时感受背部发力,避免手臂代偿',
     safety: '调整座椅高度,确保膝盖固定',
+    weightRange: '插片式可调',
+    setsReps: '3-4组 x 10-12次',
+    targetMuscles: '背阔肌、斜方肌',
+    difficulty: '新手',
   },
   {
     name: '坐姿推举机',
@@ -81,6 +97,10 @@ const STRENGTH_EQUIPMENTS = [
     usage: '坐姿进行肩部推举或胸部推举',
     tips: '推举时保持背部挺直,不要后仰借力',
     safety: '选择合适重量,避免耸肩',
+    weightRange: '插片式可调',
+    setsReps: '3组 x 10-12次',
+    targetMuscles: '三角肌前束、胸大肌',
+    difficulty: '新手',
   },
   {
     name: '腿部推蹬机',
@@ -88,6 +108,10 @@ const STRENGTH_EQUIPMENTS = [
     usage: '坐姿进行腿部推蹬训练股四头肌',
     tips: '推蹬时膝盖不要超过脚尖',
     safety: '调整座椅位置,确保腿部自然弯曲',
+    weightRange: '插片式可调',
+    setsReps: '3-4组 x 12-15次',
+    targetMuscles: '股四头肌、臀大肌',
+    difficulty: '新手',
   },
 ];
 
@@ -98,6 +122,10 @@ const CARDIO_EQUIPMENTS = [
     usage: '快走、慢跑或快跑,可调节速度和坡度',
     tips: '建议从低强度开始,逐步提升',
     safety: '跑步时注意保持正确姿势,避免过度冲击',
+    weightRange: '速度0-20km/h',
+    setsReps: '20-40分钟',
+    targetMuscles: '心肺功能、下肢肌群',
+    difficulty: '新手',
   },
   {
     name: '椭圆机',
@@ -105,6 +133,10 @@ const CARDIO_EQUIPMENTS = [
     usage: '模拟行走或跑步动作,全身参与运动',
     tips: '可以调节阻力和坡度增加难度',
     safety: '双脚平稳踩在踏板上,保持身体平衡',
+    weightRange: '阻力1-20档可调',
+    setsReps: '20-45分钟',
+    targetMuscles: '心肺功能、全身协调',
+    difficulty: '新手',
   },
   {
     name: '动感单车',
@@ -112,6 +144,10 @@ const CARDIO_EQUIPMENTS = [
     usage: '坐姿或站姿骑行,可调节阻力',
     tips: '建议配合音乐进行间歇训练',
     safety: '调整座椅高度和把手位置',
+    weightRange: '阻力1-20档可调',
+    setsReps: '30-45分钟',
+    targetMuscles: '心肺功能、股四头肌',
+    difficulty: '进阶',
   },
   {
     name: '划船机',
@@ -119,6 +155,10 @@ const CARDIO_EQUIPMENTS = [
     usage: '坐姿划船动作,全身协调发力',
     tips: '注意呼吸节奏,发力时呼气',
     safety: '避免过度用力,保持动作连贯',
+    weightRange: '风阻/水阻可调',
+    setsReps: '15-30分钟',
+    targetMuscles: '背阔肌、核心、心肺',
+    difficulty: '进阶',
   },
 ];
 
@@ -129,6 +169,10 @@ const STRETCH_EQUIPMENTS = [
     usage: '进行各种拉伸动作、瑜伽体式、平板支撑等',
     tips: '训练前铺好垫子,保持地面清洁',
     safety: '选择防滑性能好的垫子',
+    weightRange: '自重',
+    setsReps: '10-30分钟',
+    targetMuscles: '全身柔韧性、核心',
+    difficulty: '新手',
   },
   {
     name: '泡沫轴',
@@ -136,6 +180,10 @@ const STRETCH_EQUIPMENTS = [
     usage: '滚动身体各部位,缓解肌肉紧张',
     tips: '滚动时在痛点停留10-15秒',
     safety: '不要在关节部位直接滚动',
+    weightRange: '自重按压',
+    setsReps: '每部位1-2分钟',
+    targetMuscles: '全身筋膜放松',
+    difficulty: '新手',
   },
   {
     name: '筋膜枪',
@@ -143,6 +191,10 @@ const STRETCH_EQUIPMENTS = [
     usage: '对准肌肉群进行定点按摩',
     tips: '每个部位按摩1-2分钟',
     safety: '不要在骨骼、关节或头部使用',
+    weightRange: '多档位可调',
+    setsReps: '每部位1-2分钟',
+    targetMuscles: '大肌群放松',
+    difficulty: '新手',
   },
   {
     name: '拉伸带',
@@ -150,6 +202,10 @@ const STRETCH_EQUIPMENTS = [
     usage: '进行各种柔韧性训练和瑜伽动作',
     tips: '拉伸时保持呼吸,不要憋气',
     safety: '不要过度用力拉伸',
+    weightRange: '多阻力可选',
+    setsReps: '每个动作30秒 x 2-3组',
+    targetMuscles: '全身柔韧性',
+    difficulty: '新手',
   },
 ];
 
@@ -160,6 +216,10 @@ const FREE_WEIGHT_EQUIPMENTS = [
     usage: '进行杠铃深蹲、过头推举等动作',
     tips: '深蹲时膝盖与脚尖方向一致',
     safety: '使用前确保架子稳定,有保护者',
+    weightRange: '空杆20kg+配重片',
+    setsReps: '3-5组 x 5-8次',
+    targetMuscles: '股四头肌、臀大肌、核心',
+    difficulty: '进阶',
   },
   {
     name: '卧推架',
@@ -167,6 +227,10 @@ const FREE_WEIGHT_EQUIPMENTS = [
     usage: '进行杠铃卧推、哑铃卧推等动作',
     tips: '推起时保持胸部挺起',
     safety: '必须有保护者在场',
+    weightRange: '空杆20kg+配重片',
+    setsReps: '3-4组 x 6-10次',
+    targetMuscles: '胸大肌、三角肌前束、肱三头肌',
+    difficulty: '进阶',
   },
   {
     name: '硬拉台',
@@ -174,6 +238,10 @@ const FREE_WEIGHT_EQUIPMENTS = [
     usage: '进行杠铃硬拉训练',
     tips: '保持背部挺直,用腿发力',
     safety: '注意下背保护,循序渐进',
+    weightRange: '空杆20kg+配重片',
+    setsReps: '3-5组 x 3-6次',
+    targetMuscles: '腘绳肌、臀大肌、背部',
+    difficulty: '高手',
   },
   {
     name: '引体向上架',
@@ -181,6 +249,10 @@ const FREE_WEIGHT_EQUIPMENTS = [
     usage: '进行引体向上、悬垂举腿等动作',
     tips: '初学者可以使用弹力带辅助',
     safety: '确保架子稳固',
+    weightRange: '自重/负重',
+    setsReps: '3-4组 x 力竭',
+    targetMuscles: '背阔肌、肱二头肌',
+    difficulty: '进阶',
   },
 ];
 
@@ -269,8 +341,22 @@ export default function EquipmentPage() {
                       <Icon size={32} strokeWidth={1.5} className="text-white/85" />
                     </div>
                     <div className="p-4">
-                      <h3 className="font-medium text-text-primary mb-2">{eq.name}</h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium text-text-primary">{eq.name}</h3>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          eq.difficulty === '新手' ? 'bg-success/20 text-emerald-700' :
+                          eq.difficulty === '进阶' ? 'bg-warning/20 text-amber-700' :
+                          'bg-danger/20 text-red-700'
+                        }`}>
+                          {eq.difficulty}
+                        </span>
+                      </div>
                       <p className="text-xs text-text-secondary mb-2">{eq.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        <span className="text-xs px-2 py-0.5 rounded bg-primary-50 text-primary">{eq.weightRange}</span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-info/10 text-info">{eq.setsReps}</span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent">{eq.targetMuscles}</span>
+                      </div>
                       <div className="space-y-1.5">
                         <div className="flex items-start gap-2">
                           <Lightbulb size={12} className="text-primary mt-0.5 shrink-0" />
