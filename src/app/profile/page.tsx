@@ -7,7 +7,7 @@ import Link from 'next/link';
 import {
   UserCircle, Calendar, AlertTriangle, Ban, Dumbbell, ArrowRight,
   Clock, MapPin, X, Info, GraduationCap, Award, TrendingUp, Target, CheckCircle2,
-  Flame, Activity, Star, Zap, Heart, CalendarDays,
+  Flame, Activity, Star, Zap, Heart, CalendarDays, Trophy, Medal, Sunrise, Sparkles,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { CAMPUS_LABELS, MAX_WEEKLY_BOOKINGS, PROFILE_TABS } from '@/lib/constants';
@@ -45,6 +45,72 @@ export default function ProfilePage() {
     if (!currentUser) return [];
     return appointments.filter((a) => a.studentId === currentUser.id && a.status === 'completed');
   }, [appointments, currentUser]);
+
+  // 成就徽章计算
+  const achievements = useMemo(() => {
+    if (!currentUser) return [];
+    const records = userTrainingRecords;
+    const stats = trainingStats;
+
+    const badgeDefs = [
+      {
+        id: 'first_workout',
+        name: '初次打卡',
+        desc: '完成第一次训练打卡',
+        icon: Star,
+        color: 'text-warning',
+        bgColor: 'bg-warning/10',
+        unlocked: records.length >= 1,
+      },
+      {
+        id: 'streak_3',
+        name: '坚持3天',
+        desc: '连续打卡3天',
+        icon: Flame,
+        color: 'text-danger',
+        bgColor: 'bg-danger/10',
+        unlocked: (stats?.currentStreak ?? 0) >= 3,
+      },
+      {
+        id: 'streak_7',
+        name: '坚持7天',
+        desc: '连续打卡7天',
+        icon: Trophy,
+        color: 'text-primary',
+        bgColor: 'bg-primary-50',
+        unlocked: (stats?.currentStreak ?? 0) >= 7,
+      },
+      {
+        id: 'ten_workouts',
+        name: '十练达人',
+        desc: '累计完成10次训练',
+        icon: Medal,
+        color: 'text-accent',
+        bgColor: 'bg-accent/10',
+        unlocked: records.length >= 10,
+      },
+      {
+        id: 'variety',
+        name: '多面手',
+        desc: '尝试3种及以上训练类型',
+        icon: Sparkles,
+        color: 'text-info',
+        bgColor: 'bg-info/10',
+        unlocked: new Set(records.map((r) => r.workoutType)).size >= 3,
+      },
+      {
+        id: 'calorie_king',
+        name: '热量达人',
+        desc: '单次训练消耗500+千卡',
+        icon: Zap,
+        color: 'text-emerald-700',
+        bgColor: 'bg-success/10',
+        unlocked: records.some((r) => r.calories >= 500),
+      },
+    ];
+
+    return badgeDefs;
+  }, [currentUser, userTrainingRecords, trainingStats]);
 
   const handleCheckIn = (appointment: Appointment) => {
     setCheckInAppointment(appointment);
@@ -218,6 +284,70 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* 成就徽章 */}
+      <div className="card p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+            <Trophy size={18} className="text-warning" /> 我的成就
+          </h2>
+          <span className="text-xs text-text-tertiary">
+            已解锁 {achievements.filter((a) => a.unlocked).length}/{achievements.length}
+          </span>
+        </div>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          {achievements.map((badge) => {
+            const Icon = badge.icon;
+            return (
+              <div
+                key={badge.id}
+                className={`flex flex-col items-center text-center p-3 rounded-xl transition-all ${
+                  badge.unlocked
+                    ? `${badge.bgColor} scale-100`
+                    : 'bg-bg-warm opacity-50 grayscale'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${badge.unlocked ? badge.bgColor : 'bg-gray-200'}`}>
+                  <Icon size={20} className={badge.unlocked ? badge.color : 'text-gray-400'} />
+                </div>
+                <span className={`text-xs font-medium ${badge.unlocked ? 'text-text-primary' : 'text-text-tertiary'}`}>
+                  {badge.name}
+                </span>
+                <span className="text-[10px] text-text-tertiary mt-0.5">{badge.desc}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 训练趋势图 */}
+      {trainingStats && (
+        <div className="card p-5 mb-6">
+          <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <TrendingUp size={18} className="text-primary" /> 最近7天训练趋势
+          </h2>
+          <div className="flex items-end gap-2 h-32">
+            {trainingStats.weeklyData.map((item) => {
+              const maxCount = Math.max(...trainingStats.weeklyData.map((d) => d.count), 1);
+              const heightPercent = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+              return (
+                <div key={item.day} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="text-xs text-text-tertiary">{item.count > 0 ? `${item.count}次` : ''}</div>
+                  <div className="w-full bg-bg-warm rounded-t-md relative overflow-hidden" style={{ height: '80px' }}>
+                    <div
+                      className={`absolute bottom-0 left-0 right-0 rounded-t-md transition-all duration-500 ${
+                        item.count > 0 ? 'bg-primary' : 'bg-transparent'
+                      }`}
+                      style={{ height: `${Math.max(heightPercent, item.count > 0 ? 8 : 0)}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-text-secondary font-medium">{item.day}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* 训练打卡统计 */}
       {trainingStats && (
         <div className="card p-5 mb-6">
@@ -331,6 +461,76 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* 推荐行动卡片 */}
+      {(() => {
+        const upcoming = myAppointments.find((a) => ['pending', 'approved'].includes(a.status));
+        const thisWeekWorkouts = trainingStats?.weeklyData.reduce((sum, d) => sum + (d.count > 0 ? 1 : 0), 0) ?? 0;
+
+        if (upcoming) {
+          const venue = venueOfAppt(upcoming.venueId);
+          const coach = coachOfAppt(upcoming.coachId);
+          return (
+            <div className="card p-5 mb-6 bg-gradient-to-r from-primary-50 to-blue-50 border-primary">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center">
+                  <Calendar size={18} />
+                </div>
+                <div>
+                  <h3 className="font-medium text-text-primary">下次训练提醒</h3>
+                  <p className="text-sm text-text-secondary">
+                    {upcoming.date} {upcoming.startTime} · {venue?.name}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-text-secondary">
+                <Dumbbell size={14} className="text-primary" />
+                <span>教练: {coach?.name} · 记得提前10分钟到达场馆</span>
+              </div>
+            </div>
+          );
+        }
+
+        if (thisWeekWorkouts < 2 && trainingStats) {
+          return (
+            <div className="card p-5 mb-6 bg-warning/10 border-warning/30">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-warning text-white flex items-center justify-center">
+                    <Zap size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-text-primary">本周训练加油！</h3>
+                    <p className="text-sm text-text-secondary">本周已训练 {thisWeekWorkouts} 次，再坚持一下达成目标</p>
+                  </div>
+                </div>
+                <Link href="/booking" className="btn-primary text-sm">
+                  预约训练 <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="card p-5 mb-6 bg-primary-50 border-primary">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center">
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <h3 className="font-medium text-text-primary">开启你的训练之旅</h3>
+                  <p className="text-sm text-text-secondary">预约一位认证教练，开始科学健身</p>
+                </div>
+              </div>
+              <Link href="/booking" className="btn-primary text-sm">
+                去预约 <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 我的预约 */}
       <div className="card p-5">
