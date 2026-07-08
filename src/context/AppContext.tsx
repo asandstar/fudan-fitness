@@ -25,6 +25,8 @@ import type {
   CoachProfile,
   CoachSlot,
   Notification,
+  TrainingRecord,
+  TrainingStats,
   User,
   Venue,
   ViolationRecord,
@@ -48,6 +50,7 @@ interface AppContextValue {
   announcements: Announcement[];
   violations: ViolationRecord[];
   notifications: Notification[];
+  trainingRecords: TrainingRecord[];
 
   // 当前用户
   currentUser: User | null;
@@ -84,6 +87,10 @@ interface AppContextValue {
   deleteNotification: (id: string) => void;
   getUnreadCount: () => number;
 
+  // 训练打卡
+  addTrainingRecord: (record: Omit<TrainingRecord, 'id' | 'createdAt'>) => void;
+  getTrainingStats: (userId: string) => TrainingStats;
+
   // 模拟 cron:进入页面时扫描过期 pending
   sweepExpired: () => void;
 }
@@ -99,6 +106,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
   const [violations, setViolations] = useState<ViolationRecord[]>(mockViolations);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [trainingRecords, setTrainingRecords] = useState<TrainingRecord[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // 从 localStorage 恢复登录态
@@ -504,6 +512,72 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  // ===== 训练打卡 =====
+  const addTrainingRecord = useCallback((record: Omit<TrainingRecord, 'id' | 'createdAt'>) => {
+    const newRecord: TrainingRecord = {
+      ...record,
+      id: genId('tr'),
+      createdAt: new Date().toISOString(),
+    };
+    setTrainingRecords((prev) => [newRecord, ...prev]);
+  }, []);
+
+  const getTrainingStats = useCallback((userId: string): TrainingStats => {
+    const userRecords = trainingRecords.filter((r) => r.userId === userId);
+    
+    const totalWorkouts = userRecords.length;
+    const totalDuration = userRecords.reduce((sum, r) => sum + r.duration, 0);
+    const totalCalories = userRecords.reduce((sum, r) => sum + r.calories, 0);
+
+    const dates = [...new Set(userRecords.map((r) => r.date))].sort();
+    
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = dates.length - 1; i >= 0; i--) {
+      const recordDate = new Date(dates[i]);
+      recordDate.setHours(0, 0, 0, 0);
+      
+      const diffDays = Math.floor((today.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) {
+        tempStreak++;
+        currentStreak = tempStreak;
+      } else if (diffDays === tempStreak) {
+        tempStreak++;
+        currentStreak = tempStreak;
+      } else {
+        longestStreak = Math.max(longestStreak, tempStreak);
+        tempStreak = 0;
+      }
+    }
+    longestStreak = Math.max(longestStreak, tempStreak);
+
+    const dayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    const weeklyData = dayNames.map((day, index) => {
+      const dayCount = userRecords.filter((r) => {
+        const d = new Date(r.date);
+        const dayOfWeek = d.getDay();
+        const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        return adjustedDay === index;
+      }).length;
+      return { day, count: dayCount };
+    });
+
+    return {
+      totalWorkouts,
+      totalDuration,
+      totalCalories,
+      currentStreak,
+      longestStreak,
+      weeklyData,
+    };
+  }, [trainingRecords]);
+
   const value: AppContextValue = {
     users,
     venues,
@@ -513,6 +587,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     announcements,
     violations,
     notifications,
+    trainingRecords,
     currentUser,
     currentCoach,
     login,
@@ -536,6 +611,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     markAllNotificationsRead,
     deleteNotification,
     getUnreadCount,
+    addTrainingRecord,
+    getTrainingStats,
     sweepExpired,
   };
 

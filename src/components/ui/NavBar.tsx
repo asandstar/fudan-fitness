@@ -3,9 +3,10 @@
 // 顶部导航栏
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Menu, X, Dumbbell, LogOut, User as UserIcon, Bell } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, Dumbbell, LogOut, User as UserIcon, Bell, Sun, Moon } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useTheme } from '@/context/ThemeContext';
 import { avatarInitial } from '@/lib/utils';
 import NotificationCenter from './NotificationCenter';
 
@@ -20,10 +21,20 @@ export default function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, logout, getUnreadCount } = useApp();
+  const { theme, toggleTheme } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const unreadCount = getUnreadCount();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -35,7 +46,7 @@ export default function NavBar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-border-light" style={{ height: 'var(--nav-height)' }}>
+    <header className={`sticky top-0 z-40 transition-all duration-300 ${scrolled ? 'bg-surface shadow-md' : 'bg-surface/95 backdrop-blur'} border-b border-border-light`} style={{ height: 'var(--nav-height)' }}>
       <div className="max-w-content mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-text-primary">
@@ -103,6 +114,13 @@ export default function NavBar() {
                       <div className="text-sm font-medium text-text-primary">{currentUser.name}</div>
                       <div className="text-xs text-text-tertiary">{currentUser.department}</div>
                     </div>
+                    <button
+                      onClick={() => { toggleTheme(); setUserMenuOpen(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:bg-bg-warm"
+                    >
+                      {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                      {theme === 'dark' ? '浅色模式' : '暗色模式'}
+                    </button>
                     <Link
                       href="/profile"
                       className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:bg-bg-warm"

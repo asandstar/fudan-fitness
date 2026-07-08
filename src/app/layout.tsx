@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import '@/styles/globals.css';
 import { AppProvider } from '@/context/AppContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import NavBar from '@/components/ui/NavBar';
 
 const Footer = dynamic(() => import('@/components/ui/Footer'), {
@@ -18,11 +19,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN">
       <body>
-        <AppProvider>
-          <NavBar />
-          <main className="min-h-[calc(100vh-var(--nav-height))]">{children}</main>
-          <Footer />
-        </AppProvider>
+        <ThemeProvider>
+          <AppProvider>
+            <NavBar />
+            <main className="min-h-[calc(100vh-var(--nav-height))]">{children}</main>
+            <Footer />
+          </AppProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
