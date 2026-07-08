@@ -290,7 +290,7 @@ export default function VenuesPage() {
       </section>
 
       {/* CTA */}
-      <div className="mt-8 card p-6 bg-primary-50 border-primary text-center">
+      <div className="mt-8 card p-6 bg-primary-50 border border-primary/30 text-center">
         <h3 className="font-semibold text-text-primary mb-2">准备好开始训练了吗?</h3>
         <p className="text-sm text-text-secondary mb-4">选择可预约场馆,立即预约认证教练</p>
         <Link href="/booking" className="btn-primary">
@@ -299,9 +299,9 @@ export default function VenuesPage() {
       </div>
 
       {/* 信息来源标注 */}
-      <div className="mt-8 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+      <div className="mt-8 p-4 rounded-lg bg-bg-warm border border-border-light">
         <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-sm text-text-secondary">
             <ExternalLink size={14} />
             <span>信息来源：《复旦体育打卡地图》- 复旦研究生公众号</span>
           </div>
@@ -309,12 +309,12 @@ export default function VenuesPage() {
             href="https://www.toutiao.com/article/7067406348891292192/?&source=m_redirect&wid=1783495816705"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+            className="text-sm text-primary hover:underline flex items-center gap-1"
           >
             查看原文 <ChevronRight size={12} />
           </a>
         </div>
-        <p className="text-xs text-gray-400 mt-2 text-center">
+        <p className="text-xs text-text-tertiary mt-2 text-center">
           场馆位置信息参考自复旦研究生公众号文章，仅供校园健身服务参考使用
         </p>
       </div>
