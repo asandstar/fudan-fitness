@@ -60,6 +60,8 @@ export interface Venue {
   tips?: string[];           // 实用小贴士
   transportation?: string;   // 交通指引
   rules?: string[];          // 使用须知
+  contactPhone?: string;     // 联系电话
+  mapImageUrl?: string;      // 地图图片URL
 }
 
 // 学员评价
