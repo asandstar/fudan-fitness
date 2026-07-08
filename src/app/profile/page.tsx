@@ -7,6 +7,7 @@ import Link from 'next/link';
 import {
   UserCircle, Calendar, AlertTriangle, Ban, Dumbbell, ArrowRight,
   Clock, MapPin, X, Info, GraduationCap, Award, TrendingUp, Target, CheckCircle2,
+  Flame, Activity, Star, Zap, Heart, CalendarDays,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { CAMPUS_LABELS, MAX_WEEKLY_BOOKINGS, PROFILE_TABS } from '@/lib/constants';
@@ -18,15 +19,37 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import Modal from '@/components/ui/Modal';
 import Toast from '@/components/ui/Toast';
-import type { Appointment } from '@/lib/types';
+import type { Appointment, TrainingRecord } from '@/lib/types';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { currentUser, currentCoach, coaches, venues, appointments, cancelBooking, applyCoach } = useApp();
+  const { currentUser, currentCoach, coaches, venues, appointments, trainingRecords, cancelBooking, applyCoach, addTrainingRecord, getTrainingStats } = useApp();
   const [tab, setTab] = useState<string>('all');
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showApply, setShowApply] = useState(false);
+  const [showCheckIn, setShowCheckIn] = useState(false);
+  const [checkInAppointment, setCheckInAppointment] = useState<Appointment | null>(null);
+
+  const trainingStats = useMemo(() => {
+    if (!currentUser) return null;
+    return getTrainingStats(currentUser.id);
+  }, [currentUser, getTrainingStats]);
+
+  const userTrainingRecords = useMemo(() => {
+    if (!currentUser) return [];
+    return trainingRecords.filter((r) => r.userId === currentUser.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [trainingRecords, currentUser]);
+
+  const completedAppointments = useMemo(() => {
+    if (!currentUser) return [];
+    return appointments.filter((a) => a.studentId === currentUser.id && a.status === 'completed');
+  }, [appointments, currentUser]);
+
+  const handleCheckIn = (appointment: Appointment) => {
+    setCheckInAppointment(appointment);
+    setShowCheckIn(true);
+  };
 
   // Hooks 必须在 early return 之前调用
   const myAppointments = useMemo(
@@ -195,6 +218,103 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* 训练打卡统计 */}
+      {trainingStats && (
+        <div className="card p-5 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+              <Flame size={18} className="text-danger" /> 训练打卡
+            </h2>
+            {completedAppointments.length > 0 && userTrainingRecords.length < completedAppointments.length && (
+              <button onClick={() => setShowCheckIn(true)} className="btn-primary text-sm flex items-center gap-1">
+                <Star size={14} /> 去打卡
+              </button>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div className="p-3 rounded-lg bg-danger/10">
+              <div className="flex items-center gap-2 mb-1">
+                <Flame size={14} className="text-danger" />
+                <span className="text-xs text-text-secondary">连续打卡</span>
+              </div>
+              <div className="text-xl font-bold text-text-primary">{trainingStats.currentStreak}<span className="text-xs font-normal text-text-tertiary ml-1">天</span></div>
+            </div>
+            <div className="p-3 rounded-lg bg-success/10">
+              <div className="flex items-center gap-2 mb-1">
+                <CalendarDays size={14} className="text-emerald-700" />
+                <span className="text-xs text-text-secondary">累计训练</span>
+              </div>
+              <div className="text-xl font-bold text-text-primary">{trainingStats.totalWorkouts}<span className="text-xs font-normal text-text-tertiary ml-1">次</span></div>
+            </div>
+            <div className="p-3 rounded-lg bg-primary-50">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock size={14} className="text-primary" />
+                <span className="text-xs text-text-secondary">训练时长</span>
+              </div>
+              <div className="text-xl font-bold text-text-primary">{Math.round(trainingStats.totalDuration / 60)}<span className="text-xs font-normal text-text-tertiary ml-1">小时</span></div>
+            </div>
+            <div className="p-3 rounded-lg bg-warning/10">
+              <div className="flex items-center gap-2 mb-1">
+                <Zap size={14} className="text-amber-700" />
+                <span className="text-xs text-text-secondary">消耗热量</span>
+              </div>
+              <div className="text-xl font-bold text-text-primary">{trainingStats.totalCalories}<span className="text-xs font-normal text-text-tertiary ml-1">千卡</span></div>
+            </div>
+          </div>
+
+          {/* 本周打卡日历 */}
+          <div className="p-4 rounded-lg bg-bg-warm">
+            <div className="text-xs font-medium text-text-secondary mb-3">本周训练分布</div>
+            <div className="flex gap-1">
+              {trainingStats.weeklyData.map((item) => (
+                <div key={item.day} className="flex-1 text-center">
+                  <div className="text-xs text-text-tertiary mb-1">{item.day}</div>
+                  <div className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium transition-all ${
+                    item.count === 0 ? 'bg-surface text-text-tertiary' :
+                    item.count === 1 ? 'bg-success/30 text-emerald-700' :
+                    'bg-success text-white'
+                  }`}>
+                    {item.count}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 打卡记录 */}
+          {userTrainingRecords.length > 0 && (
+            <div className="mt-4">
+              <div className="text-xs font-medium text-text-secondary mb-2">最近打卡</div>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {userTrainingRecords.slice(0, 5).map((record) => (
+                  <div key={record.id} className="flex items-center justify-between p-3 rounded-md bg-surface">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        record.intensity === 'high' ? 'bg-danger/20 text-danger' :
+                        record.intensity === 'medium' ? 'bg-warning/20 text-amber-700' :
+                        'bg-success/20 text-emerald-700'
+                      }`}>
+                        {record.intensity === 'high' ? <Zap size={14} /> :
+                         record.intensity === 'medium' ? <Activity size={14} /> :
+                         <Heart size={14} />}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-text-primary">{record.workoutType}</div>
+                        <div className="text-xs text-text-tertiary">{record.date} · {record.duration}分钟 · {record.calories}千卡</div>
+                      </div>
+                    </div>
+                    {record.note && (
+                      <div className="text-xs text-text-secondary truncate max-w-32">{record.note}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {currentUser.role === 'member' && !banStatus.banned && (
         <div className="card p-5 mb-6 bg-primary-50 border-primary">
           <div className="flex items-center justify-between flex-wrap gap-3">
@@ -344,6 +464,14 @@ export default function ProfilePage() {
       {/* 教练申请弹窗 */}
       <CoachApplyModal open={showApply} onClose={() => setShowApply(false)} onApply={(d) => { applyCoach(d); setShowApply(false); setToast({ msg: '申请已提交,等待管理员审核', type: 'success' }); }} />
 
+      {/* 训练打卡弹窗 */}
+      <TrainingCheckInModal
+        open={showCheckIn}
+        onClose={() => { setShowCheckIn(false); setCheckInAppointment(null); }}
+        onCheckIn={(record) => { addTrainingRecord(record); setToast({ msg: '打卡成功!继续保持!', type: 'success' }); }}
+        completedAppointments={completedAppointments}
+      />
+
       {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
@@ -460,6 +588,144 @@ function CoachApplyModal({ open, onClose, onApply }: {
         <div className="flex gap-2 pt-2 border-t border-border-light">
           <button onClick={onClose} className="btn-ghost flex-1">取消</button>
           <button onClick={submit} className="btn-primary flex-1">提交申请</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// 训练打卡弹窗
+function TrainingCheckInModal({ open, onClose, onCheckIn, completedAppointments }: {
+  open: boolean;
+  onClose: () => void;
+  onCheckIn: (record: Omit<TrainingRecord, 'id' | 'createdAt'>) => void;
+  completedAppointments: Appointment[];
+}) {
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [workoutType, setWorkoutType] = useState('');
+  const [duration, setDuration] = useState(60);
+  const [intensity, setIntensity] = useState<'low' | 'medium' | 'high'>('medium');
+  const [calories, setCalories] = useState(300);
+  const [note, setNote] = useState('');
+
+  const WORKOUT_TYPES = ['力量训练', '有氧', 'HIIT', '瑜伽', '普拉提', '跑步', '游泳', '其他'];
+
+  const handleSubmit = () => {
+    if (!selectedAppointment) return;
+    if (!workoutType) return;
+    onCheckIn({
+      userId: selectedAppointment.studentId,
+      appointmentId: selectedAppointment.id,
+      date: selectedAppointment.date,
+      duration,
+      workoutType,
+      intensity,
+      calories,
+      note: note || undefined,
+    });
+    onClose();
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="训练打卡" size="lg">
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-medium text-text-secondary mb-2">选择已完成的训练</label>
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {completedAppointments.map((appt) => (
+              <button
+                key={appt.id}
+                onClick={() => setSelectedAppointment(appt)}
+                className={`w-full p-3 rounded-md text-left border transition-all ${
+                  selectedAppointment?.id === appt.id ? 'border-primary bg-primary-50' : 'border-border-light hover:border-primary'
+                }`}
+              >
+                <div className="text-sm font-medium text-text-primary">{appt.date}</div>
+                <div className="text-xs text-text-tertiary">{appt.startTime}-{appt.endTime}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-text-secondary mb-2">训练类型</label>
+          <div className="flex flex-wrap gap-2">
+            {WORKOUT_TYPES.map((type) => (
+              <button
+                key={type}
+                onClick={() => setWorkoutType(type)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
+                  workoutType === type ? 'bg-primary text-white border-primary' : 'border-border-light text-text-secondary hover:border-primary'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">训练时长(分钟)</label>
+            <input
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(Math.max(10, Math.min(180, parseInt(e.target.value) || 60)))}
+              className="input"
+              min={10}
+              max={180}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-secondary mb-1">消耗热量(千卡)</label>
+            <input
+              type="number"
+              value={calories}
+              onChange={(e) => setCalories(Math.max(50, Math.min(1500, parseInt(e.target.value) || 300)))}
+              className="input"
+              min={50}
+              max={1500}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-text-secondary mb-2">训练强度</label>
+          <div className="flex gap-2">
+            {(['low', 'medium', 'high'] as const).map((level) => (
+              <button
+                key={level}
+                onClick={() => setIntensity(level)}
+                className={`flex-1 py-2 px-3 rounded-md text-xs font-medium border transition-all ${
+                  intensity === level ? level === 'high' ? 'bg-danger text-white border-danger' :
+                  level === 'medium' ? 'bg-warning text-white border-warning' :
+                  'bg-success text-white border-success' :
+                  'border-border-light text-text-secondary hover:border-primary'
+                }`}
+              >
+                {level === 'low' ? '轻松' : level === 'medium' ? '适中' : '高强度'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-text-secondary mb-1">训练感受(可选)</label>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value.slice(0, 200))}
+            className="textarea"
+            rows={3}
+            placeholder="记录本次训练的感受和成果..."
+          />
+          <div className="text-right text-xs text-text-tertiary">{note.length}/200</div>
+        </div>
+
+        <div className="flex gap-2 pt-2 border-t border-border-light">
+          <button onClick={onClose} className="btn-ghost flex-1">取消</button>
+          <button onClick={handleSubmit} disabled={!selectedAppointment || !workoutType} className="btn-primary flex-1 disabled:opacity-50">
+            完成打卡
+          </button>
         </div>
       </div>
     </Modal>

@@ -157,3 +157,28 @@ export interface Notification {
   createdAt: string;
   relatedId?: string; // 关联的预约ID、教练ID等
 }
+
+// 训练打卡记录
+export interface TrainingRecord {
+  id: string;
+  userId: string;
+  appointmentId: string;
+  date: string;              // YYYY-MM-DD
+  duration: number;          // 分钟
+  workoutType: string;       // 训练类型：力量训练、有氧、HIIT、瑜伽等
+  intensity: 'low' | 'medium' | 'high';
+  calories: number;          // 消耗卡路里
+  note?: string;             // 训练感受/成果
+  photoUrl?: string;         // 可选的打卡照片
+  createdAt: string;
+}
+
+// 训练统计
+export interface TrainingStats {
+  totalWorkouts: number;
+  totalDuration: number;     // 分钟
+  totalCalories: number;
+  currentStreak: number;     // 当前连续打卡天数
+  longestStreak: number;     // 最长连续打卡天数
+  weeklyData: { day: string; count: number }[];
+}
