@@ -355,11 +355,15 @@ export async function getCoaches(): Promise<CoachProfile[]> {
   return mockGetCoaches();
 }
 
-export async function getSlots(): Promise<CoachSlot[]> {
+export async function getSlots(coachId?: string): Promise<CoachSlot[]> {
   if (isSupabaseConfigured()) {
-    throw new Error('Supabase API does not have a getSlots function');
+    return api.getCoachSlots(coachId);
   }
-  return mockGetSlots();
+  const slots = await mockGetSlots();
+  if (coachId) {
+    return slots.filter(s => s.coachId === coachId);
+  }
+  return slots;
 }
 
 export async function getAppointments(filters?: {
@@ -373,9 +377,11 @@ export async function getAppointments(filters?: {
   return mockGetAppointments(filters);
 }
 
-export async function createBooking(draft: BookingDraft): Promise<Appointment> {
+export async function createBooking(draft: BookingDraft & { studentId?: string }): Promise<Appointment> {
   if (isSupabaseConfigured()) {
-    return api.createAppointment(draft);
+    const studentId = draft.studentId || getCurrentUserId();
+    if (!studentId) throw new Error('请先登录');
+    return api.createAppointment({ ...draft, studentId });
   }
   return mockCreateBooking(draft);
 }
@@ -466,14 +472,14 @@ export async function addTrainingRecord(record: Omit<TrainingRecord, 'id' | 'cre
 
 export async function toggleFavoriteCoach(userId: string, coachId: string): Promise<void> {
   if (isSupabaseConfigured()) {
-    return api.toggleFavoriteCoach(coachId);
+    return api.toggleFavoriteCoach(userId, coachId);
   }
   return mockToggleFavoriteCoach(userId, coachId);
 }
 
 export async function login(studentId: string, password: string): Promise<User | null> {
   if (isSupabaseConfigured()) {
-    return api.getCurrentUser();
+    return api.loginByStudentId(studentId, password);
   }
   return mockLogin(studentId, password);
 }
