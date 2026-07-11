@@ -112,7 +112,7 @@ export default function TimeSlotGrid({
                         isSelected
                           ? 'bg-primary text-white border-primary'
                           : available
-                            ? 'bg-success/20 text-emerald-700 border-success/40 hover:bg-success/30'
+                            ? 'bg-success/20 text-status-success border-success/40 hover:bg-success/30'
                             : 'bg-bg-warm text-text-tertiary border-border-light cursor-not-allowed'
                       }`}
                     >

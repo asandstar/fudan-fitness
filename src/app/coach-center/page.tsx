@@ -96,7 +96,7 @@ export default function CoachCenterPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <h1 className="text-xl font-bold text-text-primary">{currentCoach.name}</h1>
-              <span className="badge bg-success/30 text-emerald-700">认证教练</span>
+              <span className="badge bg-success/30 text-status-success">认证教练</span>
             </div>
             <p className="text-sm text-text-secondary mb-2">{currentUser.department} · {currentUser.grade}</p>
             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -212,7 +212,7 @@ export default function CoachCenterPage() {
                     <div key={s.id} className={`p-2 rounded-md border text-xs ${s.isAvailable ? 'border-success/40 bg-success/10' : 'border-border-light bg-bg-warm opacity-60'}`}>
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-text-primary">{formatDate(new Date(`${s.date}T00:00:00`))} {weekdayLabel(new Date(`${s.date}T00:00:00`))}</span>
-                        <button onClick={() => coachToggleSlot(s.id)} className={`text-[10px] ${s.isAvailable ? 'text-emerald-600' : 'text-text-tertiary'}`}>
+                        <button onClick={() => coachToggleSlot(s.id)} className={`text-[10px] ${s.isAvailable ? 'text-status-success' : 'text-text-tertiary'}`}>
                           {s.isAvailable ? '已开放' : '已关闭'}
                         </button>
                       </div>
@@ -238,13 +238,13 @@ export default function CoachCenterPage() {
                 <div className="text-xs text-text-tertiary">服务社员数</div>
               </div>
               <div className="p-3 rounded-md bg-success/10">
-                <div className="text-2xl font-bold text-emerald-700">
+                <div className="text-2xl font-bold text-status-success">
                   {myReceived.filter((a) => a.status === 'completed').length}
                 </div>
                 <div className="text-xs text-text-tertiary">已完成课程</div>
               </div>
               <div className="p-3 rounded-md bg-info/10">
-                <div className="text-2xl font-bold text-blue-700">
+                <div className="text-2xl font-bold text-status-info">
                   {Math.round((myReceived.filter((a) => a.status === 'approved').length / Math.max(myReceived.length, 1)) * 100)}%
                 </div>
                 <div className="text-xs text-text-tertiary">通过率</div>

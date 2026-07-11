@@ -254,7 +254,7 @@ export default function VenuesPage() {
                   <td className="p-3 text-center">{v.capacity}人</td>
                   <td className="p-3 text-center">
                     {v.bookable ? (
-                      <span className="badge bg-success/30 text-emerald-700">可预约</span>
+                      <span className="badge bg-success/30 text-status-success">可预约</span>
                     ) : (
                       <span className="badge bg-bg-warm text-text-tertiary">展示中</span>
                     )}

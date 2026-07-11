@@ -19,12 +19,12 @@ export const TRAINING_NOTE_MAX = 200;
 
 // 状态颜色映射(用于 StatusBadge)
 export const STATUS_COLORS: Record<BookingStatus, string> = {
-  pending: 'bg-warning/20 text-warning',
-  approved: 'bg-success/30 text-emerald-700',
-  completed: 'bg-gray-100 text-gray-600',
-  cancelled: 'bg-gray-100 text-gray-500',
-  rejected: 'bg-gray-100 text-gray-500',
-  expired: 'bg-gray-100 text-gray-500',
+  pending: 'bg-warning/20 text-status-warning',
+  approved: 'bg-success/20 text-status-success',
+  completed: 'bg-bg-warm text-text-secondary',
+  cancelled: 'bg-bg-warm text-text-tertiary',
+  rejected: 'bg-bg-warm text-text-tertiary',
+  expired: 'bg-bg-warm text-text-tertiary',
   no_show: 'bg-danger/15 text-danger',
 };
 

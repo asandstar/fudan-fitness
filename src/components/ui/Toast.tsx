@@ -17,9 +17,9 @@ export default function Toast({ message, onClose, duration = 3000, type = 'succe
   }, [onClose, duration]);
 
   const colorMap = {
-    success: 'bg-success/95 text-emerald-900',
+    success: 'bg-success/95 text-white',
     error: 'bg-danger/95 text-white',
-    info: 'bg-info/95 text-blue-900',
+    info: 'bg-info/95 text-white',
   };
 
   const IconMap = {

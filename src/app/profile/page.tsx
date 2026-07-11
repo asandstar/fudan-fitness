@@ -103,7 +103,7 @@ export default function ProfilePage() {
         name: '热量达人',
         desc: '单次训练消耗500+千卡',
         icon: Zap,
-        color: 'text-emerald-700',
+        color: 'text-status-success',
         bgColor: 'bg-success/10',
         unlocked: records.some((r) => r.calories >= 500),
       },
@@ -239,7 +239,7 @@ export default function ProfilePage() {
               已禁约 · 剩余 {banStatus.remainingDays} 天解除
             </div>
           ) : currentUser.violationCount > 0 ? (
-            <p className="text-xs text-amber-700">已违约 {currentUser.violationCount} 次,3 次将禁约 30 天</p>
+            <p className="text-xs text-status-warning">已违约 {currentUser.violationCount} 次,3 次将禁约 30 天</p>
           ) : (
             <p className="text-xs text-text-tertiary">信用良好,继续保持</p>
           )}
@@ -256,7 +256,7 @@ export default function ProfilePage() {
           <div className="text-xs text-text-tertiary">累计预约</div>
         </div>
         <div className="card p-4 text-center">
-          <div className="w-8 h-8 rounded-lg bg-success/20 text-emerald-700 flex items-center justify-center mx-auto mb-2">
+          <div className="w-8 h-8 rounded-lg bg-success/20 text-status-success flex items-center justify-center mx-auto mb-2">
             <CheckCircle2 size={16} />
           </div>
           <div className="text-xl font-bold text-text-primary">
@@ -265,7 +265,7 @@ export default function ProfilePage() {
           <div className="text-xs text-text-tertiary">已完成</div>
         </div>
         <div className="card p-4 text-center">
-          <div className="w-8 h-8 rounded-lg bg-info/20 text-blue-700 flex items-center justify-center mx-auto mb-2">
+          <div className="w-8 h-8 rounded-lg bg-info/20 text-status-info flex items-center justify-center mx-auto mb-2">
             <Target size={16} />
           </div>
           <div className="text-xl font-bold text-text-primary">
@@ -372,7 +372,7 @@ export default function ProfilePage() {
             </div>
             <div className="p-3 rounded-lg bg-success/10">
               <div className="flex items-center gap-2 mb-1">
-                <CalendarDays size={14} className="text-emerald-700" />
+                <CalendarDays size={14} className="text-status-success" />
                 <span className="text-xs text-text-secondary">累计训练</span>
               </div>
               <div className="text-xl font-bold text-text-primary">{trainingStats.totalWorkouts}<span className="text-xs font-normal text-text-tertiary ml-1">次</span></div>
@@ -386,7 +386,7 @@ export default function ProfilePage() {
             </div>
             <div className="p-3 rounded-lg bg-warning/10">
               <div className="flex items-center gap-2 mb-1">
-                <Zap size={14} className="text-amber-700" />
+                <Zap size={14} className="text-status-warning" />
                 <span className="text-xs text-text-secondary">消耗热量</span>
               </div>
               <div className="text-xl font-bold text-text-primary">{trainingStats.totalCalories}<span className="text-xs font-normal text-text-tertiary ml-1">千卡</span></div>
@@ -417,7 +417,7 @@ export default function ProfilePage() {
                   <div className="text-xs text-text-tertiary mb-1">{item.day}</div>
                   <div className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium transition-all ${
                     item.count === 0 ? 'bg-surface text-text-tertiary' :
-                    item.count === 1 ? 'bg-success/30 text-emerald-700' :
+                    item.count === 1 ? 'bg-success/30 text-status-success' :
                     'bg-success text-white'
                   }`}>
                     {item.count}
@@ -437,8 +437,8 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                         record.intensity === 'high' ? 'bg-danger/20 text-danger' :
-                        record.intensity === 'medium' ? 'bg-warning/20 text-amber-700' :
-                        'bg-success/20 text-emerald-700'
+                        record.intensity === 'medium' ? 'bg-warning/20 text-status-warning' :
+                        'bg-success/20 text-status-success'
                       }`}>
                         {record.intensity === 'high' ? <Zap size={14} /> :
                          record.intensity === 'medium' ? <Activity size={14} /> :
@@ -614,13 +614,13 @@ export default function ProfilePage() {
                         {cancellable && (
                           <button
                             onClick={() => setCancelTarget(a)}
-                            className={`btn text-xs ${free ? 'btn-outline' : 'bg-warning/20 text-amber-700 hover:bg-warning/30'}`}
+                            className={`btn text-xs ${free ? 'btn-outline' : 'bg-warning/20 text-status-warning hover:bg-warning/30'}`}
                           >
                             <X size={12} /> 取消预约
                           </button>
                         )}
                         {cancellable && !free && (
-                          <span className="text-[10px] text-amber-700 flex items-center gap-0.5">
+                          <span className="text-[10px] text-status-warning flex items-center gap-0.5">
                             <AlertTriangle size={10} /> 距开课 {hrs}h,取消记违约
                           </span>
                         )}
@@ -649,12 +649,12 @@ export default function ProfilePage() {
                 </div>
               </div>
               {free ? (
-                <div className="p-3 rounded-md bg-success/15 text-emerald-700 text-xs flex items-start gap-2 mb-4">
+                <div className="p-3 rounded-md bg-success/15 text-status-success text-xs flex items-start gap-2 mb-4">
                   <Info size={14} className="mt-0.5 shrink-0" />
                   <span>距离开课超过 24 小时,本次取消<span className="font-medium">不影响信用记录</span>。</span>
                 </div>
               ) : (
-                <div className="p-3 rounded-md bg-warning/15 text-amber-700 text-xs flex items-start gap-2 mb-4">
+                <div className="p-3 rounded-md bg-warning/15 text-status-warning text-xs flex items-start gap-2 mb-4">
                   <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                   <span>
                     距离开课仅 {hrs} 小时,取消将<span className="font-medium">记违约一次</span>。

@@ -20,13 +20,13 @@ const NOTIFICATION_ICONS: Record<string, typeof Bell> = {
 };
 
 const NOTIFICATION_COLORS: Record<string, string> = {
-  booking_approved: 'bg-success/20 text-emerald-700',
+  booking_approved: 'bg-success/20 text-status-success',
   booking_rejected: 'bg-danger/20 text-danger',
-  booking_cancelled: 'bg-warning/20 text-amber-700',
-  booking_completed: 'bg-success/20 text-emerald-700',
-  coach_approved: 'bg-success/20 text-emerald-700',
+  booking_cancelled: 'bg-warning/20 text-status-warning',
+  booking_completed: 'bg-success/20 text-status-success',
+  coach_approved: 'bg-success/20 text-status-success',
   coach_rejected: 'bg-danger/20 text-danger',
-  system: 'bg-info/20 text-blue-700',
+  system: 'bg-info/20 text-status-info',
 };
 
 export default function NotificationCenter({ open, onClose }: NotificationCenterProps) {

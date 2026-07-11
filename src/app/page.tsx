@@ -346,11 +346,11 @@ export default function HomePage() {
               href="/venues"
               className="card p-4 flex flex-col items-center text-center hover:border-primary"
             >
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${c.bookable ? 'bg-success/30 text-emerald-700' : 'bg-bg-warm text-text-tertiary'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${c.bookable ? 'bg-success/30 text-status-success' : 'bg-bg-warm text-text-tertiary'}`}>
                 <Dumbbell size={18} />
               </div>
               <div className="text-sm font-medium text-text-primary">{CAMPUS_LABELS[c.campus]}</div>
-              <div className={`text-xs mt-1 ${c.bookable ? 'text-emerald-600' : 'text-text-tertiary'}`}>
+              <div className={`text-xs mt-1 ${c.bookable ? 'text-status-success' : 'text-text-tertiary'}`}>
                 {c.bookable ? '可预约' : '敬请期待'}
               </div>
             </Link>
