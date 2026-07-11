@@ -344,8 +344,8 @@ export default function EquipmentPage() {
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium text-text-primary">{eq.name}</h3>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          eq.difficulty === '新手' ? 'bg-success/20 text-emerald-700' :
-                          eq.difficulty === '进阶' ? 'bg-warning/20 text-amber-700' :
+                          eq.difficulty === '新手' ? 'bg-success/20 text-status-success' :
+                          eq.difficulty === '进阶' ? 'bg-warning/20 text-status-warning' :
                           'bg-danger/20 text-red-700'
                         }`}>
                           {eq.difficulty}

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Sparkles, Target, Users, MapPin, Star, Zap, ChevronRight, Check, Dumbbell } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { matchCoaches, type MatchPreferences } from '@/lib/utils';
+import { matchCoaches, type MatchPreferences, type CoachMatchResult } from '@/lib/utils';
 import { CAMPUS_LABELS } from '@/lib/constants';
 import type { VenueCampus } from '@/lib/types';
 
@@ -32,7 +32,7 @@ const CAMPUS_OPTIONS: { value: VenueCampus | 'any'; label: string }[] = [
 
 export default function MatchPage() {
   const router = useRouter();
-  const { coaches, currentUser } = useApp();
+  const { coaches, venues, currentUser } = useApp();
 
   const [step, setStep] = useState(1);
   const [preferences, setPreferences] = useState<MatchPreferences>({
@@ -41,7 +41,7 @@ export default function MatchPage() {
     isBeginner: false,
     preferredCampus: null,
   });
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<CoachMatchResult[]>([]);
   const [isMatching, setIsMatching] = useState(false);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function MatchPage() {
     if (step === 2) {
       setIsMatching(true);
       setTimeout(() => {
-        const matched = matchCoaches(coaches, preferences);
+        const matched = matchCoaches(coaches, preferences, venues);
         setResults(matched);
         setIsMatching(false);
         setStep(3);
@@ -82,16 +82,16 @@ export default function MatchPage() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-600';
+    if (score >= 80) return 'text-status-success';
     if (score >= 60) return 'text-primary';
-    if (score >= 40) return 'text-amber-600';
+    if (score >= 40) return 'text-status-warning';
     return 'text-text-tertiary';
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-emerald-100';
+    if (score >= 80) return 'bg-success/20';
     if (score >= 60) return 'bg-primary-100';
-    if (score >= 40) return 'bg-amber-100';
+    if (score >= 40) return 'bg-warning/20';
     return 'bg-bg-warm';
   };
 
@@ -109,7 +109,7 @@ export default function MatchPage() {
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                step > s ? 'bg-success text-emerald-700' : step === s ? 'bg-primary text-white' : 'bg-bg-warm text-text-tertiary'
+                step > s ? 'bg-success text-white' : step === s ? 'bg-primary text-white' : 'bg-bg-warm text-text-tertiary'
               }`}>
                 {step > s ? <Check size={16} /> : s}
               </div>
@@ -183,7 +183,7 @@ export default function MatchPage() {
                   {GENDER_OPTIONS.map((option) => (
                     <button
                       key={option.value}
-                      onClick={() => setPreferences((p) => ({ ...p, genderPreference: option.value as any }))}
+                      onClick={() => setPreferences((p) => ({ ...p, genderPreference: option.value as 'male' | 'female' | 'any' }))}
                       className={`flex-1 py-2 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
                         preferences.genderPreference === option.value
                           ? 'border-primary bg-primary-50 text-primary'
@@ -270,7 +270,7 @@ export default function MatchPage() {
               <>
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 rounded-2xl bg-success/30 flex items-center justify-center mx-auto mb-4">
-                    <Star className="text-emerald-600" size={32} />
+                    <Star className="text-status-success" size={32} />
                   </div>
                   <h2 className="text-xl font-bold text-text-primary mb-2">匹配结果</h2>
                   <p className="text-sm text-text-secondary">为你找到了 {results.length} 位适合的教练</p>
@@ -303,7 +303,7 @@ export default function MatchPage() {
                               <span className="font-bold text-text-primary">{result.coachName}</span>
                               <span className="text-xs text-text-tertiary">{result.department}</span>
                               {result.isBeginnerFriendly && (
-                                <span className="badge bg-success/20 text-emerald-700 text-xs">新手友好</span>
+                                <span className="badge bg-success/20 text-status-success text-xs">新手友好</span>
                               )}
                               {result.isFemaleFriendly && (
                                 <span className="badge bg-accent/20 text-accent text-xs">女生友好</span>
@@ -321,7 +321,7 @@ export default function MatchPage() {
                             <div className="flex flex-wrap gap-2">
                               {result.matchDetails.map((detail: string, i: number) => (
                                 <span key={i} className="flex items-center gap-1 text-xs text-text-secondary">
-                                  <Zap size={10} className="text-amber-500" />
+                                  <Zap size={10} className="text-status-warning" />
                                   {detail}
                                 </span>
                               ))}

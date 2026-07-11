@@ -201,8 +201,9 @@ const CAMPUS_DISTANCE: Record<string, Record<string, number>> = {
 };
 
 export function matchCoaches(
-  coaches: any[],
+  coaches: import('./types').CoachProfile[],
   preferences: MatchPreferences,
+  venues?: import('./types').Venue[],
 ): CoachMatchResult[] {
   return coaches
     .filter((c) => c.certStatus === 'approved')
@@ -246,7 +247,7 @@ export function matchCoaches(
         const campus = preferences.preferredCampus;
         const minDistance = Math.min(
           ...coach.venues.map((vId: string) => {
-            const venue = coaches.find((c) => c.id === vId);
+            const venue = venues?.find((v) => v.id === vId);
             if (!venue) return 999;
             return CAMPUS_DISTANCE[campus]?.[venue.campus] || 999;
           }),

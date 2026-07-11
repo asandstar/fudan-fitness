@@ -79,6 +79,14 @@
 [data-theme="dark"] .bg-heat-high { background-color: rgba(249, 115, 22, 0.6); }
 [data-theme="dark"] .bg-heat-peak { background-color: rgba(239, 68, 68, 0.7); }
 
+/* 语义状态色（暗色模式自动切换浅色，保证对比度） */
+.text-status-success { color: #059669; }
+.text-status-warning { color: #B45309; }
+.text-status-info { color: #1D4ED8; }
+[data-theme="dark"] .text-status-success { color: #6EE7B7; }
+[data-theme="dark"] .text-status-warning { color: #FCD34D; }
+[data-theme="dark"] .text-status-info { color: #93C5FD; }
+
 * {
   box-sizing: border-box;
 }

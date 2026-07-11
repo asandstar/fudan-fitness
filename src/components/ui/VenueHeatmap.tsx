@@ -48,9 +48,9 @@ function getHeatColor(value: number): string {
 }
 
 function getCrowdLevel(value: number): { label: string; color: string } {
-  if (value < 0.2) return { label: '人很少', color: 'text-emerald-700' };
-  if (value < 0.4) return { label: '较少', color: 'text-emerald-600' };
-  if (value < 0.6) return { label: '适中', color: 'text-amber-600' };
+  if (value < 0.2) return { label: '人很少', color: 'text-status-success' };
+  if (value < 0.4) return { label: '较少', color: 'text-status-success' };
+  if (value < 0.6) return { label: '适中', color: 'text-status-warning' };
   if (value < 0.8) return { label: '较多', color: 'text-orange-600' };
   return { label: '高峰期', color: 'text-red-600' };
 }
@@ -130,7 +130,7 @@ export default function VenueHeatmap({ venues }: VenueHeatmapProps) {
                     key={h}
                     className={`flex-1 aspect-square rounded-sm ${getHeatColor(value)} transition-all hover:scale-110 hover:z-10 cursor-pointer relative group`}
                   >
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-text-primary text-bg text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20">
                       {day} {h}:00
                       <span className={`block text-center ${level.color.replace('text-', 'text-')}`}>
                         {level.label}

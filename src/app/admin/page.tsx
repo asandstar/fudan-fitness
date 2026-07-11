@@ -160,7 +160,7 @@ export default function AdminPage() {
                 </div>
                 <div className="p-4 rounded-lg bg-success/10">
                   <div className="flex items-center gap-2 mb-2">
-                    <Dumbbell size={16} className="text-emerald-700" />
+                    <Dumbbell size={16} className="text-status-success" />
                     <span className="text-xs text-text-secondary">认证教练</span>
                   </div>
                   <div className="text-2xl font-bold text-text-primary">
@@ -169,7 +169,7 @@ export default function AdminPage() {
                 </div>
                 <div className="p-4 rounded-lg bg-info/10">
                   <div className="flex items-center gap-2 mb-2">
-                    <Calendar size={16} className="text-blue-700" />
+                    <Calendar size={16} className="text-status-info" />
                     <span className="text-xs text-text-secondary">预约总数</span>
                   </div>
                   <div className="text-2xl font-bold text-text-primary">{appointments.length}</div>
@@ -222,14 +222,14 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between p-3 rounded-md bg-warning/10">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-warning/30 flex items-center justify-center">
-                        <UserCheck size={14} className="text-amber-700" />
+                        <UserCheck size={14} className="text-status-warning" />
                       </div>
                       <div>
                         <div className="text-sm font-medium text-text-primary">教练审核待处理</div>
                         <div className="text-xs text-text-tertiary">{pendingCoaches.length} 人等待审核</div>
                       </div>
                     </div>
-                    <span className="text-xl font-bold text-amber-700">{pendingCoaches.length}</span>
+                    <span className="text-xl font-bold text-status-warning">{pendingCoaches.length}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-md bg-primary-50">
                     <div className="flex items-center gap-2">

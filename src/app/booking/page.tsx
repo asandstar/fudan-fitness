@@ -226,14 +226,14 @@ function BookingInner() {
           <h1 className="text-2xl font-bold text-text-primary">预约带练</h1>
           <p className="text-sm text-text-secondary mt-1">选择场馆、时段和教练,完成预约</p>
         </div>
-        <div className={`px-4 py-2 rounded-lg text-sm font-medium ${quotaExceeded ? 'bg-warning/20 text-amber-700' : 'bg-primary-50 text-primary'}`}>
+        <div className={`px-4 py-2 rounded-lg text-sm font-medium ${quotaExceeded ? 'bg-warning/20 text-status-warning' : 'bg-primary-50 text-primary'}`}>
           本周已预约 <span className="font-bold">{weeklyCount}</span> / {MAX_WEEKLY_BOOKINGS} 次
         </div>
       </div>
 
       {/* 满额提示 */}
       {quotaExceeded && (
-        <div className="mb-4 p-3 rounded-lg bg-warning/15 text-amber-700 text-sm flex items-center gap-2">
+        <div className="mb-4 p-3 rounded-lg bg-warning/15 text-status-warning text-sm flex items-center gap-2">
           <AlertCircle size={16} /> 本周预约次数已达上限({MAX_WEEKLY_BOOKINGS} 次),无法继续预约。下周一再试。
         </div>
       )}
@@ -245,7 +245,7 @@ function BookingInner() {
             <div key={s.num} className="flex items-center flex-1 last:flex-none">
               <div className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                  step > s.num ? 'bg-success text-emerald-700' : step === s.num ? 'bg-primary text-white' : 'bg-bg-warm text-text-tertiary'
+                  step > s.num ? 'bg-success text-white' : step === s.num ? 'bg-primary text-white' : 'bg-bg-warm text-text-tertiary'
                 }`}>
                   {step > s.num ? <Check size={16} /> : s.num}
                 </div>
@@ -282,7 +282,7 @@ function BookingInner() {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-bold text-text-primary">{v.name}</h3>
-                    <span className="badge bg-success/30 text-emerald-700">可预约</span>
+                    <span className="badge bg-success/30 text-status-success">可预约</span>
                   </div>
                   <p className="text-xs text-text-tertiary mb-2 flex items-center gap-1">
                     <MapPin size={12} /> {CAMPUS_LABELS[v.campus]}
@@ -461,7 +461,7 @@ function BookingInner() {
             </div>
 
             {/* 规则提醒 */}
-            <div className="p-3 rounded-lg bg-warning/10 text-amber-700 text-xs space-y-1 mb-5">
+            <div className="p-3 rounded-lg bg-warning/10 text-status-warning text-xs space-y-1 mb-5">
               <p className="font-medium flex items-center gap-1"><AlertCircle size={12} /> 提交前请确认:</p>
               <p>· 开课前 24 小时可免费取消,之后取消将记违约一次</p>
               <p>· 教练需在 12 小时内审核,超时系统自动取消</p>
