@@ -15,7 +15,7 @@ const EQUIPMENT_CATEGORIES = [
     subtitle: '增肌与力量训练',
     gradientClass: 'equipment-gradient-strength',
     description: '力量器械区配备了完整的综合训练设备,适合增肌、力量提升和塑形训练。建议初学者从固定器械开始,逐步过渡到自由重量。',
-    source: 'ACSM运动指南',
+    source: '中国体育科学学会运动指南',
   },
   {
     id: 'cardio',
@@ -33,7 +33,7 @@ const EQUIPMENT_CATEGORIES = [
     subtitle: '柔韧性与恢复',
     gradientClass: 'equipment-gradient-stretch',
     description: '拉伸放松区是训练前后必不可少的区域,配备专业的放松恢复设备,帮助预防受伤和加速恢复。',
-    source: 'NSCA训练指南',
+    source: '国家体育总局训练指南',
   },
   {
     id: 'freeweight',
@@ -42,7 +42,7 @@ const EQUIPMENT_CATEGORIES = [
     subtitle: '进阶力量训练',
     gradientClass: 'equipment-gradient-freeweight',
     description: '自由重量区是进阶训练者的核心区域,配备专业的力量训练设备。使用前请确保掌握标准动作。',
-    source: '美国力量与体能协会',
+    source: '中国体育科学学会体能分会',
   },
 ];
 
@@ -265,8 +265,9 @@ const SAFETY_TIPS = [
 ];
 
 const SOURCES = [
-  { name: 'ACSM', fullName: '美国运动医学会', url: 'https://www.acsm.org/', desc: '全球最权威的运动科学与医学专业组织' },
-  { name: 'NSCA', fullName: '美国国家体能协会', url: 'https://www.nsca.com/', desc: '体能训练领域的国际权威机构' },
+  { name: 'CSSS', fullName: '中国体育科学学会', url: 'https://www.csss.cn/', desc: '中国体育科学领域最权威的学术组织' },
+  { name: 'NISM', fullName: '国家体育总局运动医学研究所', url: 'https://www.sport.gov.cn/', desc: '国家级运动医学研究与指导机构' },
+  { name: 'JSSS', fullName: '日本体育科学学会', url: 'https://www.jsss.jp/', desc: '亚洲体育科学领域的权威学术组织' },
   { name: 'WHO', fullName: '世界卫生组织', url: 'https://www.who.int/', desc: '全球公共卫生领域的权威机构' },
 ];
 
@@ -402,7 +403,7 @@ export default function EquipmentPage() {
       {/* 权威信息源 */}
       <section className="p-6 rounded-lg bg-bg-warm">
         <h2 className="text-lg font-semibold text-text-primary mb-4">参考资料来源</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {SOURCES.map((s) => (
             <div key={s.name} className="flex items-start gap-3 p-4 rounded-lg bg-surface border border-border-light">
               <div className="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center font-bold shrink-0">

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 CREATE TABLE IF NOT EXISTS coach_profiles (
   id TEXT PRIMARY KEY,
   user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE UNIQUE,
-  name TEXT NOT NULL,
+  name TEXT,
   department TEXT,
   grade TEXT,
   specialties TEXT[] NOT NULL DEFAULT '{}',
@@ -147,7 +147,7 @@ ALTER TABLE announcements DISABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications DISABLE ROW LEVEL SECURITY;
 ALTER TABLE training_records DISABLE ROW LEVEL SECURITY;
 
--- ===== 11. 更新时间触发器 =====
+-- ===== 11. 更新时间触发器（幂等）=====
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -156,6 +156,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_appointments_updated_at ON appointments;
 CREATE TRIGGER update_appointments_updated_at
   BEFORE UPDATE ON appointments
   FOR EACH ROW

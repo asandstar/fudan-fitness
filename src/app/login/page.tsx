@@ -17,8 +17,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
-  const handleLogin = (sid: string, pwd: string) => {
-    const user = login(sid, pwd);
+  const handleLogin = async (sid: string, pwd: string) => {
+    const user = await login(sid, pwd);
     if (user) {
       setToast({ msg: `欢迎回来,${user.name}`, type: 'success' });
       setTimeout(() => {
@@ -32,19 +32,19 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentId || !password) {
       setError('请输入学号和密码');
       return;
     }
-    handleLogin(studentId, password);
+    await handleLogin(studentId, password);
   };
 
-  const handleQuick = (sid: string, pwd: string) => {
+  const handleQuick = async (sid: string, pwd: string) => {
     setStudentId(sid);
     setPassword(pwd);
-    handleLogin(sid, pwd);
+    await handleLogin(sid, pwd);
   };
 
   return (
@@ -89,6 +89,13 @@ export default function LoginPage() {
               <LogIn size={14} /> 登录
             </button>
           </form>
+
+          <p className="text-center text-sm text-text-secondary mt-4">
+            没有账号?{' '}
+            <Link href="/register" className="text-primary hover:underline font-medium">
+              立即注册
+            </Link>
+          </p>
 
           <div className="my-5 flex items-center gap-3">
             <div className="flex-1 h-px bg-border-light" />

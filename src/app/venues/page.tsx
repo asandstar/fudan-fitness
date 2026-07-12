@@ -32,7 +32,7 @@ const EQUIPMENTS = [
     desc: '哑铃、杠铃、龙门架、高位下拉、坐姿推举、腿部推蹬等',
     detail: '适合增肌、力量提升、塑形训练。建议初学者从固定器械开始,掌握动作规范后再使用自由重量',
     tags: ['增肌', '力量', '塑形'],
-    source: 'ACSM运动指南建议:每周进行2-3次力量训练,每次训练不同肌群',
+    source: '中国体育科学学会建议:每周进行2-3次力量训练,每次训练不同肌群',
   },
   {
     icon: Activity,
@@ -48,7 +48,7 @@ const EQUIPMENTS = [
     desc: '瑜伽垫、泡沫轴、筋膜枪、拉伸架等放松恢复设备',
     detail: '训练前后必须进行10-15分钟拉伸,有效预防受伤、缓解肌肉酸痛、提升柔韧性',
     tags: ['放松', '柔韧性', '恢复'],
-    source: 'NSCA建议:每次训练前后进行动态热身和静态拉伸',
+    source: '国家体育总局运动医学研究所建议:每次训练前后进行动态热身和静态拉伸',
   },
   {
     icon: TrendingUp,
@@ -56,13 +56,14 @@ const EQUIPMENTS = [
     desc: '深蹲架、卧推架、硬拉台、引体向上架等自由训练设备',
     detail: '适合进阶力量训练者。使用前请确保掌握标准动作,建议在教练指导下进行',
     tags: ['进阶', '爆发力', '极限'],
-    source: '美国力量与体能协会(NSCA):自由重量训练能最大化刺激肌肉生长',
+    source: '中国体育科学学会体能分会:自由重量训练能最大化刺激肌肉生长',
   },
 ];
 
 const SOURCES = [
-  { name: 'ACSM', fullName: '美国运动医学会', url: 'https://www.acsm.org/', desc: '全球最权威的运动科学与医学专业组织' },
-  { name: 'NSCA', fullName: '美国国家体能协会', url: 'https://www.nsca.com/', desc: '体能训练领域的国际权威机构' },
+  { name: 'CSSS', fullName: '中国体育科学学会', url: 'https://www.csss.cn/', desc: '中国体育科学领域最权威的学术组织' },
+  { name: 'NISM', fullName: '国家体育总局运动医学研究所', url: 'https://www.sport.gov.cn/', desc: '国家级运动医学研究与指导机构' },
+  { name: 'JSSS', fullName: '日本体育科学学会', url: 'https://www.jsss.jp/', desc: '亚洲体育科学领域的权威学术组织' },
   { name: 'WHO', fullName: '世界卫生组织', url: 'https://www.who.int/', desc: '全球公共卫生领域的权威机构' },
 ];
 
@@ -215,7 +216,7 @@ export default function VenuesPage() {
         {/* 权威信息源 */}
         <div className="mt-6 p-5 rounded-lg bg-bg-warm">
           <h3 className="text-sm font-medium text-text-primary mb-3">参考资料来源</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {SOURCES.map((s) => (
               <div key={s.name} className="flex items-center gap-3 p-3 rounded-md bg-surface border border-border-light">
                 <div className="w-8 h-8 rounded-lg bg-primary-50 text-primary flex items-center justify-center font-bold text-sm">

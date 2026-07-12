@@ -144,9 +144,9 @@ export default function ProfilePage() {
   const coachOfAppt = (coachId: string) => coaches.find((c) => c.id === coachId);
   const venueOfAppt = (venueId: string) => venues.find((v) => v.id === venueId);
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     if (!cancelTarget) return;
-    const result = cancelBooking(cancelTarget.id);
+    const result = await cancelBooking(cancelTarget.id);
     setCancelTarget(null);
     if (!result.ok) {
       setToast({ msg: result.error ?? '取消失败', type: 'error' });
