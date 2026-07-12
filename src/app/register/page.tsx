@@ -61,16 +61,27 @@ export default function RegisterPage() {
   };
 
   const handleQuickLogin = async (sid: string, pwd: string) => {
-    const user = await login(sid, pwd);
-    if (user) {
-      setToast({ msg: `欢迎回来,${user.name}`, type: 'success' });
-      setTimeout(() => {
-        if (user.role === 'admin') router.push('/admin');
-        else if (user.role === 'coach') router.push('/coach-center');
-        else router.push('/profile');
-      }, 600);
-    } else {
-      setToast({ msg: '登录失败,请检查账号', type: 'error' });
+    // 统一使用 loading 状态，避免注册和快捷登录同时操作
+    if (loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      const user = await login(sid, pwd);
+      if (user) {
+        setToast({ msg: `欢迎回来,${user.name}`, type: 'success' });
+        setTimeout(() => {
+          if (user.role === 'admin') router.push('/admin');
+          else if (user.role === 'coach') router.push('/coach-center');
+          else router.push('/profile');
+        }, 600);
+      } else {
+        setToast({ msg: '登录失败,请检查账号', type: 'error' });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '登录失败,请稍后重试';
+      setToast({ msg, type: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,7 +188,8 @@ export default function RegisterPage() {
               <button
                 key={acc.studentId}
                 onClick={() => handleQuickLogin(acc.studentId, acc.password)}
-                className="flex items-center gap-3 p-3 rounded-lg border border-border-light hover:border-primary hover:bg-primary-50 transition-all text-left"
+                disabled={loading}
+                className="flex items-center gap-3 p-3 rounded-lg border border-border-light hover:border-primary hover:bg-primary-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="w-9 h-9 rounded-full bg-primary-50 text-primary flex items-center justify-center">
                   <UserCircle size={20} />

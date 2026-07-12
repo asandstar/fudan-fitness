@@ -14,7 +14,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import Modal from '@/components/ui/Modal';
 import Toast from '@/components/ui/Toast';
-import type { CoachProfile } from '@/lib/types';
+import type { Announcement, CoachProfile } from '@/lib/types';
 
 const NAV_ITEMS = [
   { key: 'dashboard', label: '数据看板', icon: LayoutDashboard },
@@ -42,6 +42,16 @@ export default function AdminPage() {
   // 预约筛选
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterKeyword, setFilterKeyword] = useState('');
+
+  // Phase 1B: 按操作 key 锁定: approveCoach:<id>, rejectCoach:<id>, publishAnn, deleteAnn:<id>, unban:<id>
+  const [loadingKeys, setLoadingKeys] = useState<Record<string, boolean>>({});
+  const setLoading = (key: string, value: boolean) => {
+    setLoadingKeys((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Phase 1B: 确认弹窗目标
+  const [deleteAnnTarget, setDeleteAnnTarget] = useState<Announcement | null>(null);
+  const [unbanTarget, setUnbanTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Hooks 必须在 early return 之前调用
   const filteredAppts = useMemo(() => {
@@ -76,28 +86,81 @@ export default function AdminPage() {
     return new Date(u.bannedUntil) > new Date();
   });
 
-  const handleApproveCoach = (c: CoachProfile) => {
-    adminApproveCoach(c.id);
-    setToast({ msg: `已通过 ${c.name} 的教练申请`, type: 'success' });
+  const handleApproveCoach = async (c: CoachProfile) => {
+    const key = `approveCoach:${c.id}`;
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await adminApproveCoach(c.id);
+      setToast({ msg: `已通过 ${c.name} 的教练申请`, type: 'success' });
+    } catch (err) {
+      setToast({ msg: err instanceof Error ? err.message : '操作失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
   };
-  const handleRejectCoach = () => {
+  const handleRejectCoach = async () => {
     if (!rejectCoach) return;
     if (!rejectReason.trim()) { setToast({ msg: '请填写驳回原因', type: 'error' }); return; }
-    adminRejectCoach(rejectCoach.id, rejectReason.trim());
-    setToast({ msg: `已驳回 ${rejectCoach.name} 的申请`, type: 'info' });
-    setRejectCoach(null);
-    setRejectReason('');
+    const key = `rejectCoach:${rejectCoach.id}`;
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await adminRejectCoach(rejectCoach.id, rejectReason.trim());
+      setRejectCoach(null);
+      setRejectReason('');
+      setToast({ msg: `已驳回 ${rejectCoach.name} 的申请`, type: 'info' });
+    } catch (err) {
+      // 保留驳回原因和弹窗,方便用户重试
+      setToast({ msg: err instanceof Error ? err.message : '操作失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
   };
-  const handlePublishAnn = () => {
+  const handlePublishAnn = async () => {
     if (!annTitle.trim() || !annContent.trim()) { setToast({ msg: '标题和内容不能为空', type: 'error' }); return; }
-    adminPublishAnnouncement({ title: annTitle.trim(), content: annContent.trim(), isPinned: annPinned, status: 'published' });
-    setAnnTitle(''); setAnnContent(''); setAnnPinned(false);
-    setToast({ msg: '公告已发布', type: 'success' });
+    const key = 'publishAnn';
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await adminPublishAnnouncement({ title: annTitle.trim(), content: annContent.trim(), isPinned: annPinned, status: 'published' });
+      setAnnTitle(''); setAnnContent(''); setAnnPinned(false);
+      setToast({ msg: '公告已发布', type: 'success' });
+    } catch (err) {
+      setToast({ msg: err instanceof Error ? err.message : '发布失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
   };
-  const handleUnban = (userId: string) => {
-    adminUnbanUser(userId);
-    const u = users.find((x) => x.id === userId);
-    setToast({ msg: `已解除 ${u?.name ?? ''} 的禁约`, type: 'success' });
+  const handleDeleteAnn = async () => {
+    if (!deleteAnnTarget) return;
+    const key = `deleteAnn:${deleteAnnTarget.id}`;
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await adminDeleteAnnouncement(deleteAnnTarget.id);
+      setDeleteAnnTarget(null);
+      setToast({ msg: '公告已删除', type: 'success' });
+    } catch (err) {
+      setToast({ msg: err instanceof Error ? err.message : '删除失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
+  };
+  const handleUnban = async () => {
+    if (!unbanTarget) return;
+    const key = `unban:${unbanTarget.id}`;
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await adminUnbanUser(unbanTarget.id);
+      setUnbanTarget(null);
+      setToast({ msg: `已解除 ${unbanTarget.name} 的禁约`, type: 'success' });
+    } catch (err) {
+      setToast({ msg: err instanceof Error ? err.message : '解禁失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
   };
 
   const studentOf = (sid: string) => users.find((u) => u.id === sid);
@@ -308,36 +371,49 @@ export default function AdminPage() {
               <EmptyState icon={<UserCheck size={28} />} title="暂无待审核申请" description="新申请会显示在这里" />
             ) : (
               <div className="space-y-3">
-                {pendingCoaches.map((c) => (
-                  <div key={c.id} className="rounded-lg border border-border-light p-4">
-                    <div className="flex items-start gap-3 flex-wrap">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-light text-white flex items-center justify-center font-bold shrink-0">
-                        {avatarInitial(c.name)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-text-primary">{c.name}</h3>
-                          <span className="text-xs text-text-tertiary">{c.department} · {c.grade}</span>
+                {pendingCoaches.map((c) => {
+                  const approveKey = `approveCoach:${c.id}`;
+                  const rejectKey = `rejectCoach:${c.id}`;
+                  const isBusy = !!loadingKeys[approveKey] || !!loadingKeys[rejectKey];
+                  return (
+                    <div key={c.id} className="rounded-lg border border-border-light p-4">
+                      <div className="flex items-start gap-3 flex-wrap">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-light text-white flex items-center justify-center font-bold shrink-0">
+                          {avatarInitial(c.name)}
                         </div>
-                        <div className="flex flex-wrap gap-1.5 mb-2">
-                          {c.specialties.map((s) => <span key={s} className="badge bg-primary-50 text-primary">{s}</span>)}
-                          {c.isBeginnerFriendly && <span className="badge bg-accent-light text-accent">新手友好</span>}
-                          {c.isFemaleFriendly && <span className="badge bg-accent-light text-accent">女生教练</span>}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-medium text-text-primary">{c.name}</h3>
+                            <span className="text-xs text-text-tertiary">{c.department} · {c.grade}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {c.specialties.map((s) => <span key={s} className="badge bg-primary-50 text-primary">{s}</span>)}
+                            {c.isBeginnerFriendly && <span className="badge bg-accent-light text-accent">新手友好</span>}
+                            {c.isFemaleFriendly && <span className="badge bg-accent-light text-accent">女生教练</span>}
+                          </div>
+                          <p className="text-sm text-text-secondary italic">"{c.styleDesc}"</p>
+                          <p className="text-xs text-text-tertiary mt-2">申请时间:{new Date(c.certAppliedAt ?? '').toLocaleString('zh-CN')}</p>
                         </div>
-                        <p className="text-sm text-text-secondary italic">"{c.styleDesc}"</p>
-                        <p className="text-xs text-text-tertiary mt-2">申请时间:{new Date(c.certAppliedAt ?? '').toLocaleString('zh-CN')}</p>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <button onClick={() => handleApproveCoach(c)} className="btn-primary text-xs">
-                          <Check size={12} /> 通过
-                        </button>
-                        <button onClick={() => { setRejectCoach(c); setRejectReason(''); }} className="btn-ghost text-xs border border-border">
-                          <X size={12} /> 驳回
-                        </button>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => handleApproveCoach(c)}
+                            disabled={isBusy}
+                            className="btn-primary text-xs disabled:opacity-50"
+                          >
+                            <Check size={12} /> {loadingKeys[approveKey] ? '处理中...' : '通过'}
+                          </button>
+                          <button
+                            onClick={() => { setRejectCoach(c); setRejectReason(''); }}
+                            disabled={isBusy}
+                            className="btn-ghost text-xs border border-border disabled:opacity-50"
+                          >
+                            <X size={12} /> 驳回
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -349,14 +425,14 @@ export default function AdminPage() {
             <div className="card p-5">
               <h2 className="text-lg font-semibold text-text-primary mb-4">发布公告</h2>
               <div className="space-y-3">
-                <input value={annTitle} onChange={(e) => setAnnTitle(e.target.value)} placeholder="公告标题" className="input" />
-                <textarea value={annContent} onChange={(e) => setAnnContent(e.target.value)} placeholder="公告内容" className="textarea" rows={4} />
+                <input value={annTitle} onChange={(e) => setAnnTitle(e.target.value)} placeholder="公告标题" className="input" disabled={!!loadingKeys['publishAnn']} />
+                <textarea value={annContent} onChange={(e) => setAnnContent(e.target.value)} placeholder="公告内容" className="textarea" rows={4} disabled={!!loadingKeys['publishAnn']} />
                 <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
-                  <input type="checkbox" checked={annPinned} onChange={(e) => setAnnPinned(e.target.checked)} className="accent-primary" />
+                  <input type="checkbox" checked={annPinned} onChange={(e) => setAnnPinned(e.target.checked)} className="accent-primary" disabled={!!loadingKeys['publishAnn']} />
                   <Pin size={14} /> 置顶
                 </label>
-                <button onClick={handlePublishAnn} className="btn-primary">
-                  <Megaphone size={14} /> 发布
+                <button onClick={handlePublishAnn} className="btn-primary" disabled={!!loadingKeys['publishAnn']}>
+                  <Megaphone size={14} /> {loadingKeys['publishAnn'] ? '发布中...' : '发布'}
                 </button>
               </div>
             </div>
@@ -364,21 +440,29 @@ export default function AdminPage() {
             <div className="card p-5">
               <h3 className="font-semibold text-text-primary mb-3">已发布公告 · {announcements.length} 条</h3>
               <div className="space-y-2">
-                {announcements.map((a) => (
-                  <div key={a.id} className="p-3 rounded-md border border-border-light flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {a.isPinned && <span className="badge bg-danger/15 text-danger"><Pin size={10} /> 置顶</span>}
-                        <span className="text-sm font-medium text-text-primary">{a.title}</span>
+                {announcements.map((a) => {
+                  const delKey = `deleteAnn:${a.id}`;
+                  return (
+                    <div key={a.id} className="p-3 rounded-md border border-border-light flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {a.isPinned && <span className="badge bg-danger/15 text-danger"><Pin size={10} /> 置顶</span>}
+                          <span className="text-sm font-medium text-text-primary">{a.title}</span>
+                        </div>
+                        <p className="text-xs text-text-secondary mt-1 line-clamp-2">{a.content}</p>
+                        <p className="text-xs text-text-tertiary mt-1">{new Date(a.publishedAt).toLocaleString('zh-CN')}</p>
                       </div>
-                      <p className="text-xs text-text-secondary mt-1 line-clamp-2">{a.content}</p>
-                      <p className="text-xs text-text-tertiary mt-1">{new Date(a.publishedAt).toLocaleString('zh-CN')}</p>
+                      <button
+                        onClick={() => setDeleteAnnTarget(a)}
+                        disabled={!!loadingKeys[delKey]}
+                        className="text-text-tertiary hover:text-danger p-1 disabled:opacity-50"
+                        aria-label="删除"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-                    <button onClick={() => adminDeleteAnnouncement(a.id)} className="text-text-tertiary hover:text-danger p-1" aria-label="删除">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -455,6 +539,7 @@ export default function AdminPage() {
                   <tbody>
                     {bannedUsers.map((u) => {
                       const days = Math.ceil((new Date(u.bannedUntil!).getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+                      const unbanKey = `unban:${u.id}`;
                       return (
                         <tr key={u.id} className="border-b border-border-light hover:bg-bg-warm/50">
                           <td className="py-2 pr-3 font-medium">{u.name}</td>
@@ -463,8 +548,12 @@ export default function AdminPage() {
                           <td className="py-2 pr-3"><span className="badge bg-danger/15 text-danger">{u.violationCount} 次</span></td>
                           <td className="py-2 pr-3 text-xs text-text-secondary">剩余 {days} 天</td>
                           <td className="py-2 pr-3">
-                            <button onClick={() => handleUnban(u.id)} className="btn-outline text-xs px-2 py-1">
-                              <RefreshCw size={12} /> 解除禁约
+                            <button
+                              onClick={() => setUnbanTarget({ id: u.id, name: u.name })}
+                              disabled={!!loadingKeys[unbanKey]}
+                              className="btn-outline text-xs px-2 py-1 disabled:opacity-50"
+                            >
+                              <RefreshCw size={12} /> {loadingKeys[unbanKey] ? '处理中...' : '解除禁约'}
                             </button>
                           </td>
                         </tr>
@@ -483,10 +572,65 @@ export default function AdminPage() {
         {rejectCoach && (
           <div>
             <p className="text-sm text-text-secondary mb-3">驳回 {rejectCoach.name} 的申请,请填写原因(申请人可重新申请):</p>
-            <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="例如:擅长领域描述不够具体,建议补充训练经验" className="textarea" rows={3} />
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="例如:擅长领域描述不够具体,建议补充训练经验"
+              className="textarea"
+              rows={3}
+              disabled={!!loadingKeys[`rejectCoach:${rejectCoach.id}`]}
+            />
             <div className="flex gap-2 mt-3">
-              <button onClick={() => setRejectCoach(null)} className="btn-ghost flex-1">取消</button>
-              <button onClick={handleRejectCoach} className="btn-danger flex-1">确认驳回</button>
+              <button onClick={() => setRejectCoach(null)} className="btn-ghost flex-1" disabled={!!loadingKeys[`rejectCoach:${rejectCoach.id}`]}>取消</button>
+              <button
+                onClick={handleRejectCoach}
+                className="btn-danger flex-1"
+                disabled={!!loadingKeys[`rejectCoach:${rejectCoach.id}`]}
+              >
+                {loadingKeys[`rejectCoach:${rejectCoach.id}`] ? '处理中...' : '确认驳回'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Phase 1B: 删除公告确认弹窗 */}
+      <Modal open={!!deleteAnnTarget} onClose={() => setDeleteAnnTarget(null)} title="删除公告" size="sm">
+        {deleteAnnTarget && (
+          <div>
+            <p className="text-sm text-text-secondary mb-3">
+              确认删除公告「{deleteAnnTarget.title}」吗?删除后不可恢复。
+            </p>
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => setDeleteAnnTarget(null)} className="btn-ghost flex-1" disabled={!!loadingKeys[`deleteAnn:${deleteAnnTarget.id}`]}>取消</button>
+              <button
+                onClick={handleDeleteAnn}
+                className="btn-danger flex-1"
+                disabled={!!loadingKeys[`deleteAnn:${deleteAnnTarget.id}`]}
+              >
+                {loadingKeys[`deleteAnn:${deleteAnnTarget.id}`] ? '删除中...' : '确认删除'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Phase 1B: 解禁用户确认弹窗 */}
+      <Modal open={!!unbanTarget} onClose={() => setUnbanTarget(null)} title="解除禁约" size="sm">
+        {unbanTarget && (
+          <div>
+            <p className="text-sm text-text-secondary mb-3">
+              确认解除 {unbanTarget.name} 的禁约状态?解禁后用户可立即恢复预约权限。
+            </p>
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => setUnbanTarget(null)} className="btn-ghost flex-1" disabled={!!loadingKeys[`unban:${unbanTarget.id}`]}>取消</button>
+              <button
+                onClick={handleUnban}
+                className="btn-primary flex-1"
+                disabled={!!loadingKeys[`unban:${unbanTarget.id}`]}
+              >
+                {loadingKeys[`unban:${unbanTarget.id}`] ? '处理中...' : '确认解禁'}
+              </button>
             </div>
           </div>
         )}
