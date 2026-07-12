@@ -15,20 +15,33 @@ export default function LoginPage() {
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   const handleLogin = async (sid: string, pwd: string) => {
-    const user = await login(sid, pwd);
-    if (user) {
-      setToast({ msg: `欢迎回来,${user.name}`, type: 'success' });
-      setTimeout(() => {
-        if (user.role === 'admin') router.push('/admin');
-        else if (user.role === 'coach') router.push('/coach-center');
-        else router.push('/profile');
-      }, 600);
-    } else {
-      setError('学号或密码错误');
-      setToast({ msg: '登录失败,请检查账号', type: 'error' });
+    // 防重复提交
+    if (submitting) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      const user = await login(sid, pwd);
+      if (user) {
+        setToast({ msg: `欢迎回来,${user.name}`, type: 'success' });
+        setTimeout(() => {
+          if (user.role === 'admin') router.push('/admin');
+          else if (user.role === 'coach') router.push('/coach-center');
+          else router.push('/profile');
+        }, 600);
+      } else {
+        setError('学号或密码错误');
+        setToast({ msg: '登录失败,请检查账号', type: 'error' });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '登录失败,请稍后重试';
+      setError(msg);
+      setToast({ msg, type: 'error' });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -72,6 +85,7 @@ export default function LoginPage() {
                 onChange={(e) => { setStudentId(e.target.value); setError(''); }}
                 placeholder="请输入学号"
                 className="input"
+                disabled={submitting}
               />
             </div>
             <div>
@@ -82,11 +96,12 @@ export default function LoginPage() {
                 onChange={(e) => { setPassword(e.target.value); setError(''); }}
                 placeholder="请输入密码"
                 className="input"
+                disabled={submitting}
               />
             </div>
             {error && <p className="text-xs text-danger">{error}</p>}
-            <button type="submit" className="btn-primary w-full">
-              <LogIn size={14} /> 登录
+            <button type="submit" className="btn-primary w-full" disabled={submitting}>
+              <LogIn size={14} /> {submitting ? '登录中...' : '登录'}
             </button>
           </form>
 
@@ -108,7 +123,8 @@ export default function LoginPage() {
               <button
                 key={acc.studentId}
                 onClick={() => handleQuick(acc.studentId, acc.password)}
-                className="flex items-center gap-3 p-3 rounded-lg border border-border-light hover:border-primary hover:bg-primary-50 transition-all text-left"
+                disabled={submitting}
+                className="flex items-center gap-3 p-3 rounded-lg border border-border-light hover:border-primary hover:bg-primary-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="w-9 h-9 rounded-full bg-primary-50 text-primary flex items-center justify-center">
                   <UserCircle size={20} />

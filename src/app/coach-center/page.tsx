@@ -28,6 +28,13 @@ export default function CoachCenterPage() {
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
+  const [completeTarget, setCompleteTarget] = useState<Appointment | null>(null);
+  // action key: approve:<id>, reject:<id>, complete:<id>, toggle:<id>, addSlot, updateProfile
+  const [loadingKeys, setLoadingKeys] = useState<Record<string, boolean>>({});
+
+  const setLoading = (key: string, value: boolean) => {
+    setLoadingKeys((prev) => ({ ...prev, [key]: value }));
+  };
 
   // Hooks 必须在 early return 之前调用
   const myReceived = useMemo(
@@ -68,21 +75,63 @@ export default function CoachCenterPage() {
   const studentOf = (sid: string) => users.find((u) => u.id === sid);
   const venueOf = (vid: string) => venues.find((v) => v.id === vid);
 
-  const handleApprove = (a: Appointment) => {
-    coachApproveAppointment(a.id);
-    setToast({ msg: '已通过预约', type: 'success' });
+  const handleApprove = async (a: Appointment) => {
+    const key = `approve:${a.id}`;
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await coachApproveAppointment(a.id);
+      setToast({ msg: '已通过预约', type: 'success' });
+    } catch (err) {
+      setToast({ msg: err instanceof Error ? err.message : '操作失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
   };
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!rejectTarget) return;
     if (!rejectReason.trim()) { setToast({ msg: '请填写拒绝原因', type: 'error' }); return; }
-    coachRejectAppointment(rejectTarget.id, rejectReason.trim());
-    setRejectTarget(null);
-    setRejectReason('');
-    setToast({ msg: '已拒绝预约', type: 'info' });
+    const key = `reject:${rejectTarget.id}`;
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await coachRejectAppointment(rejectTarget.id, rejectReason.trim());
+      setRejectTarget(null);
+      setRejectReason('');
+      setToast({ msg: '已拒绝预约', type: 'info' });
+    } catch (err) {
+      // 保留拒绝原因和弹窗，方便用户重试
+      setToast({ msg: err instanceof Error ? err.message : '操作失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
   };
-  const handleComplete = (a: Appointment) => {
-    coachCompleteAppointment(a.id);
-    setToast({ msg: '已标记完成,累计带练 +1', type: 'success' });
+  const handleComplete = async () => {
+    if (!completeTarget) return;
+    const key = `complete:${completeTarget.id}`;
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await coachCompleteAppointment(completeTarget.id);
+      setCompleteTarget(null);
+      setToast({ msg: '已标记完成,累计带练 +1', type: 'success' });
+    } catch (err) {
+      setToast({ msg: err instanceof Error ? err.message : '操作失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
+  };
+  const handleToggleSlot = async (slotId: string) => {
+    const key = `toggle:${slotId}`;
+    if (loadingKeys[key]) return;
+    setLoading(key, true);
+    try {
+      await coachToggleSlot(slotId);
+    } catch (err) {
+      setToast({ msg: err instanceof Error ? err.message : '操作失败', type: 'error' });
+    } finally {
+      setLoading(key, false);
+    }
   };
 
   return (
@@ -168,17 +217,29 @@ export default function CoachCenterPage() {
                       </div>
                       {a.status === 'pending' && (
                         <div className="flex gap-2 mt-3">
-                          <button onClick={() => handleApprove(a)} className="btn-primary text-xs flex-1">
-                            <Check size={12} /> 通过
+                          <button
+                            onClick={() => handleApprove(a)}
+                            disabled={!!loadingKeys[`approve:${a.id}`] || !!loadingKeys[`reject:${a.id}`]}
+                            className="btn-primary text-xs flex-1 disabled:opacity-50"
+                          >
+                            <Check size={12} /> {loadingKeys[`approve:${a.id}`] ? '处理中...' : '通过'}
                           </button>
-                          <button onClick={() => { setRejectTarget(a); setRejectReason(''); }} className="btn-ghost text-xs flex-1 border border-border">
+                          <button
+                            onClick={() => { setRejectTarget(a); setRejectReason(''); }}
+                            disabled={!!loadingKeys[`approve:${a.id}`] || !!loadingKeys[`reject:${a.id}`]}
+                            className="btn-ghost text-xs flex-1 border border-border disabled:opacity-50"
+                          >
                             <X size={12} /> 拒绝
                           </button>
                         </div>
                       )}
                       {a.status === 'approved' && (
                         <div className="mt-3">
-                          <button onClick={() => handleComplete(a)} className="btn-outline text-xs w-full">
+                          <button
+                            onClick={() => setCompleteTarget(a)}
+                            disabled={!!loadingKeys[`complete:${a.id}`]}
+                            className="btn-outline text-xs w-full disabled:opacity-50"
+                          >
                             <CheckCircle2 size={12} /> 标记课程完成
                           </button>
                         </div>
@@ -212,8 +273,12 @@ export default function CoachCenterPage() {
                     <div key={s.id} className={`p-2 rounded-md border text-xs ${s.isAvailable ? 'border-success/40 bg-success/10' : 'border-border-light bg-bg-warm opacity-60'}`}>
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-text-primary">{formatDate(new Date(`${s.date}T00:00:00`))} {weekdayLabel(new Date(`${s.date}T00:00:00`))}</span>
-                        <button onClick={() => coachToggleSlot(s.id)} className={`text-[10px] ${s.isAvailable ? 'text-status-success' : 'text-text-tertiary'}`}>
-                          {s.isAvailable ? '已开放' : '已关闭'}
+                        <button
+                          onClick={() => handleToggleSlot(s.id)}
+                          disabled={!!loadingKeys[`toggle:${s.id}`]}
+                          className={`text-[10px] disabled:opacity-50 ${s.isAvailable ? 'text-status-success' : 'text-text-tertiary'}`}
+                        >
+                          {loadingKeys[`toggle:${s.id}`] ? '处理中...' : s.isAvailable ? '已开放' : '已关闭'}
                         </button>
                       </div>
                       <div className="text-text-secondary mt-0.5">{s.startTime}-{s.endTime} · {venue?.name}</div>
@@ -279,10 +344,31 @@ export default function CoachCenterPage() {
               placeholder="例如:该时段已满,请改约其他时间"
               className="textarea"
               rows={3}
+              disabled={!!loadingKeys[`reject:${rejectTarget.id}`]}
             />
             <div className="flex gap-2 mt-3">
-              <button onClick={() => setRejectTarget(null)} className="btn-ghost flex-1">取消</button>
-              <button onClick={handleReject} className="btn-danger flex-1">确认拒绝</button>
+              <button onClick={() => setRejectTarget(null)} className="btn-ghost flex-1" disabled={!!loadingKeys[`reject:${rejectTarget.id}`]}>取消</button>
+              <button onClick={handleReject} disabled={!!loadingKeys[`reject:${rejectTarget.id}`]} className="btn-danger flex-1">
+                {loadingKeys[`reject:${rejectTarget.id}`] ? '处理中...' : '确认拒绝'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* 完成确认弹窗 */}
+      <Modal open={!!completeTarget} onClose={() => setCompleteTarget(null)} title="确认完成带练" size="sm">
+        {completeTarget && (
+          <div>
+            <p className="text-sm text-text-secondary mb-3">
+              确认完成 {formatDateTime(completeTarget.date, completeTarget.startTime, completeTarget.endTime)} 的带练?
+              完成后累计带练次数 +1,且不可撤销。
+            </p>
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => setCompleteTarget(null)} className="btn-ghost flex-1" disabled={!!loadingKeys[`complete:${completeTarget.id}`]}>取消</button>
+              <button onClick={handleComplete} disabled={!!loadingKeys[`complete:${completeTarget.id}`]} className="btn-primary flex-1">
+                {loadingKeys[`complete:${completeTarget.id}`] ? '处理中...' : '确认完成'}
+              </button>
             </div>
           </div>
         )}
@@ -294,7 +380,19 @@ export default function CoachCenterPage() {
         onClose={() => setShowProfileEdit(false)}
         coach={currentCoach}
         venues={venues.filter((v) => v.bookable)}
-        onSave={(patch) => { coachUpdateProfile(patch); setShowProfileEdit(false); setToast({ msg: '资料已更新', type: 'success' }); }}
+        onSave={async (patch) => {
+          if (loadingKeys['updateProfile']) return;
+          setLoading('updateProfile', true);
+          try {
+            await coachUpdateProfile(patch);
+            setShowProfileEdit(false);
+            setToast({ msg: '资料已更新', type: 'success' });
+          } catch (err) {
+            setToast({ msg: err instanceof Error ? err.message : '更新失败', type: 'error' });
+          } finally {
+            setLoading('updateProfile', false);
+          }
+        }}
       />
 
       {/* 添加时段弹窗 */}
@@ -303,7 +401,19 @@ export default function CoachCenterPage() {
         onClose={() => setShowAddSlot(false)}
         coachId={currentCoach.id}
         venues={venues.filter((v) => v.bookable)}
-        onAdd={(slot) => { coachAddSlot(slot); setShowAddSlot(false); setToast({ msg: '时段已添加', type: 'success' }); }}
+        onAdd={async (slot) => {
+          if (loadingKeys['addSlot']) return;
+          setLoading('addSlot', true);
+          try {
+            await coachAddSlot(slot);
+            setShowAddSlot(false);
+            setToast({ msg: '时段已添加', type: 'success' });
+          } catch (err) {
+            setToast({ msg: err instanceof Error ? err.message : '添加失败', type: 'error' });
+          } finally {
+            setLoading('addSlot', false);
+          }
+        }}
       />
 
       {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
@@ -317,7 +427,7 @@ function ProfileEditModal({ open, onClose, coach, venues, onSave }: {
   onClose: () => void;
   coach: { specialties: string[]; styleDesc: string; isBeginnerFriendly: boolean; isFemaleFriendly: boolean; venues: string[] };
   venues: { id: string; name: string }[];
-  onSave: (patch: { specialties: string[]; styleDesc: string; isBeginnerFriendly: boolean; isFemaleFriendly: boolean; venues: string[] }) => void;
+  onSave: (patch: { specialties: string[]; styleDesc: string; isBeginnerFriendly: boolean; isFemaleFriendly: boolean; venues: string[] }) => Promise<void>;
 }) {
   const [specialties, setSpecialties] = useState(coach.specialties);
   const [input, setInput] = useState('');
@@ -325,12 +435,25 @@ function ProfileEditModal({ open, onClose, coach, venues, onSave }: {
   const [beginner, setBeginner] = useState(coach.isBeginnerFriendly);
   const [female, setFemale] = useState(coach.isFemaleFriendly);
   const [venueIds, setVenueIds] = useState(coach.venues);
+  const [submitting, setSubmitting] = useState(false);
 
   const add = () => {
     const v = input.trim();
     if (v && !specialties.includes(v) && specialties.length < 5) {
       setSpecialties([...specialties, v]);
       setInput('');
+    }
+  };
+
+  const submit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await onSave({ specialties, styleDesc, isBeginnerFriendly: beginner, isFemaleFriendly: female, venues: venueIds });
+    } catch {
+      // 错误由父组件处理
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -369,8 +492,8 @@ function ProfileEditModal({ open, onClose, coach, venues, onSave }: {
           </div>
         </div>
         <div className="flex gap-2 pt-2 border-t border-border-light">
-          <button onClick={onClose} className="btn-ghost flex-1">取消</button>
-          <button onClick={() => onSave({ specialties, styleDesc, isBeginnerFriendly: beginner, isFemaleFriendly: female, venues: venueIds })} className="btn-primary flex-1">保存</button>
+          <button onClick={onClose} className="btn-ghost flex-1" disabled={submitting}>取消</button>
+          <button onClick={submit} disabled={submitting} className="btn-primary flex-1">{submitting ? '保存中...' : '保存'}</button>
         </div>
       </div>
     </Modal>
@@ -383,17 +506,26 @@ function AddSlotModal({ open, onClose, coachId, venues, onAdd }: {
   onClose: () => void;
   coachId: string;
   venues: { id: string; name: string }[];
-  onAdd: (slot: { coachId: string; venueId: string; date: string; startTime: string; endTime: string; isAvailable: boolean }) => void;
+  onAdd: (slot: { coachId: string; venueId: string; date: string; startTime: string; endTime: string; isAvailable: boolean }) => Promise<void>;
 }) {
   const days = getNextNDays(7);
   const [venueId, setVenueId] = useState(venues[0]?.id ?? '');
   const [date, setDate] = useState(formatDate(days[0]));
   const [startTime, setStartTime] = useState('10:00');
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = () => {
+  const submit = async () => {
+    if (submitting) return;
     const [h] = startTime.split(':').map(Number);
     const endH = String(h + 1).padStart(2, '0');
-    onAdd({ coachId, venueId, date, startTime, endTime: `${endH}:00`, isAvailable: true });
+    setSubmitting(true);
+    try {
+      await onAdd({ coachId, venueId, date, startTime, endTime: `${endH}:00`, isAvailable: true });
+    } catch {
+      // 错误由父组件处理
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -424,8 +556,8 @@ function AddSlotModal({ open, onClose, coachId, venues, onAdd }: {
           </select>
         </div>
         <div className="flex gap-2 pt-2 border-t border-border-light">
-          <button onClick={onClose} className="btn-ghost flex-1">取消</button>
-          <button onClick={submit} className="btn-primary flex-1">添加</button>
+          <button onClick={onClose} className="btn-ghost flex-1" disabled={submitting}>取消</button>
+          <button onClick={submit} disabled={submitting} className="btn-primary flex-1">{submitting ? '添加中...' : '添加'}</button>
         </div>
       </div>
     </Modal>

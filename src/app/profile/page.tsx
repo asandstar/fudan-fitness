@@ -30,6 +30,12 @@ export default function ProfilePage() {
   const [showApply, setShowApply] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [checkInAppointment, setCheckInAppointment] = useState<Appointment | null>(null);
+  // 按操作 key 锁定：cancel:<id>, applyCoach, checkIn:<id>
+  const [loadingKeys, setLoadingKeys] = useState<Record<string, boolean>>({});
+
+  const setLoading = (key: string, value: boolean) => {
+    setLoadingKeys((prev) => ({ ...prev, [key]: value }));
+  };
 
   const trainingStats = useMemo(() => {
     if (!currentUser) return null;
@@ -146,16 +152,25 @@ export default function ProfilePage() {
 
   const handleCancel = async () => {
     if (!cancelTarget) return;
-    const result = await cancelBooking(cancelTarget.id);
-    setCancelTarget(null);
-    if (!result.ok) {
-      setToast({ msg: result.error ?? '取消失败', type: 'error' });
-      return;
-    }
-    if (result.isViolation) {
-      setToast({ msg: '已取消,本次记违约一次(开课前 24h 内)', type: 'info' });
-    } else {
-      setToast({ msg: '已取消,不影响信用', type: 'success' });
+    const loadKey = `cancel:${cancelTarget.id}`;
+    if (loadingKeys[loadKey]) return;
+    setLoading(loadKey, true);
+    try {
+      const result = await cancelBooking(cancelTarget.id);
+      if (!result.ok) {
+        setToast({ msg: result.error ?? '取消失败', type: 'error' });
+        return;
+      }
+      setCancelTarget(null);
+      if (result.isViolation) {
+        setToast({ msg: '已取消,本次记违约一次(开课前 24h 内)', type: 'info' });
+      } else {
+        setToast({ msg: '已取消,不影响信用', type: 'success' });
+      }
+    } catch (err) {
+      setToast({ msg: err instanceof Error ? err.message : '取消失败,请稍后重试', type: 'error' });
+    } finally {
+      setLoading(loadKey, false);
     }
   };
 
@@ -663,12 +678,13 @@ export default function ProfilePage() {
                 </div>
               )}
               <div className="flex gap-2">
-                <button onClick={() => setCancelTarget(null)} className="btn-ghost flex-1">再想想</button>
+                <button onClick={() => setCancelTarget(null)} className="btn-ghost flex-1" disabled={!!loadingKeys[`cancel:${cancelTarget?.id}`]}>再想想</button>
                 <button
                   onClick={handleCancel}
+                  disabled={!!loadingKeys[`cancel:${cancelTarget?.id}`]}
                   className={`btn flex-1 ${free ? 'btn-primary' : 'bg-warning text-white hover:opacity-90'}`}
                 >
-                  确认取消
+                  {loadingKeys[`cancel:${cancelTarget?.id}`] ? '取消中...' : '确认取消'}
                 </button>
               </div>
             </div>
@@ -677,13 +693,41 @@ export default function ProfilePage() {
       </Modal>
 
       {/* 教练申请弹窗 */}
-      <CoachApplyModal open={showApply} onClose={() => setShowApply(false)} onApply={(d) => { applyCoach(d); setShowApply(false); setToast({ msg: '申请已提交,等待管理员审核', type: 'success' }); }} />
+      <CoachApplyModal
+        open={showApply}
+        onClose={() => setShowApply(false)}
+        onApply={async (d) => {
+          if (loadingKeys['applyCoach']) return;
+          setLoading('applyCoach', true);
+          try {
+            await applyCoach(d);
+            setShowApply(false);
+            setToast({ msg: '申请已提交,等待管理员审核', type: 'success' });
+          } catch (err) {
+            setToast({ msg: err instanceof Error ? err.message : '申请失败,请稍后重试', type: 'error' });
+          } finally {
+            setLoading('applyCoach', false);
+          }
+        }}
+      />
 
       {/* 训练打卡弹窗 */}
       <TrainingCheckInModal
         open={showCheckIn}
         onClose={() => { setShowCheckIn(false); setCheckInAppointment(null); }}
-        onCheckIn={(record) => { addTrainingRecord(record); setToast({ msg: '打卡成功!继续保持!', type: 'success' }); }}
+        onCheckIn={async (record) => {
+          const loadKey = `checkIn:${record.appointmentId ?? 'new'}`;
+          if (loadingKeys[loadKey]) return;
+          setLoading(loadKey, true);
+          try {
+            await addTrainingRecord(record);
+            setToast({ msg: '打卡成功!继续保持!', type: 'success' });
+          } catch (err) {
+            setToast({ msg: err instanceof Error ? err.message : '打卡失败,请稍后重试', type: 'error' });
+          } finally {
+            setLoading(loadKey, false);
+          }
+        }}
         completedAppointments={completedAppointments}
       />
 
@@ -696,7 +740,7 @@ export default function ProfilePage() {
 function CoachApplyModal({ open, onClose, onApply }: {
   open: boolean;
   onClose: () => void;
-  onApply: (d: { specialties: string[]; styleDesc: string; isBeginnerFriendly: boolean; isFemaleFriendly: boolean; venues: string[] }) => void;
+  onApply: (d: { specialties: string[]; styleDesc: string; isBeginnerFriendly: boolean; isFemaleFriendly: boolean; venues: string[] }) => Promise<void>;
 }) {
   const { venues } = useApp();
   const [specialties, setSpecialties] = useState<string[]>([]);
@@ -706,6 +750,7 @@ function CoachApplyModal({ open, onClose, onApply }: {
   const [female, setFemale] = useState(false);
   const [venueIds, setVenueIds] = useState<string[]>([]);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const bookable = venues.filter((v) => v.bookable);
 
@@ -721,12 +766,20 @@ function CoachApplyModal({ open, onClose, onApply }: {
     }
   };
 
-  const submit = () => {
+  const submit = async () => {
+    if (submitting) return;
     if (specialties.length === 0) { setError('请至少添加一个擅长领域'); return; }
     if (!styleDesc.trim()) { setError('请填写带练风格'); return; }
     if (venueIds.length === 0) { setError('请至少选择一个关联场馆'); return; }
     setError('');
-    onApply({ specialties, styleDesc: styleDesc.trim(), isBeginnerFriendly: beginner, isFemaleFriendly: female, venues: venueIds });
+    setSubmitting(true);
+    try {
+      await onApply({ specialties, styleDesc: styleDesc.trim(), isBeginnerFriendly: beginner, isFemaleFriendly: female, venues: venueIds });
+    } catch {
+      // 错误由父组件处理，弹窗保持打开
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -802,7 +855,7 @@ function CoachApplyModal({ open, onClose, onApply }: {
 
         <div className="flex gap-2 pt-2 border-t border-border-light">
           <button onClick={onClose} className="btn-ghost flex-1">取消</button>
-          <button onClick={submit} className="btn-primary flex-1">提交申请</button>
+          <button onClick={submit} disabled={submitting} className="btn-primary flex-1">{submitting ? '提交中...' : '提交申请'}</button>
         </div>
       </div>
     </Modal>
@@ -813,7 +866,7 @@ function CoachApplyModal({ open, onClose, onApply }: {
 function TrainingCheckInModal({ open, onClose, onCheckIn, completedAppointments }: {
   open: boolean;
   onClose: () => void;
-  onCheckIn: (record: Omit<TrainingRecord, 'id' | 'createdAt'>) => void;
+  onCheckIn: (record: Omit<TrainingRecord, 'id' | 'createdAt'>) => Promise<void>;
   completedAppointments: Appointment[];
 }) {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -822,23 +875,32 @@ function TrainingCheckInModal({ open, onClose, onCheckIn, completedAppointments 
   const [intensity, setIntensity] = useState<'low' | 'medium' | 'high'>('medium');
   const [calories, setCalories] = useState(300);
   const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const WORKOUT_TYPES = ['力量训练', '有氧', 'HIIT', '瑜伽', '普拉提', '跑步', '游泳', '其他'];
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (submitting) return;
     if (!selectedAppointment) return;
     if (!workoutType) return;
-    onCheckIn({
-      userId: selectedAppointment.studentId,
-      appointmentId: selectedAppointment.id,
-      date: selectedAppointment.date,
-      duration,
-      workoutType,
-      intensity,
-      calories,
-      note: note || undefined,
-    });
-    onClose();
+    setSubmitting(true);
+    try {
+      await onCheckIn({
+        userId: selectedAppointment.studentId,
+        appointmentId: selectedAppointment.id,
+        date: selectedAppointment.date,
+        duration,
+        workoutType,
+        intensity,
+        calories,
+        note: note || undefined,
+      });
+      onClose();
+    } catch {
+      // 错误由父组件处理，弹窗保持打开
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -938,8 +1000,8 @@ function TrainingCheckInModal({ open, onClose, onCheckIn, completedAppointments 
 
         <div className="flex gap-2 pt-2 border-t border-border-light">
           <button onClick={onClose} className="btn-ghost flex-1">取消</button>
-          <button onClick={handleSubmit} disabled={!selectedAppointment || !workoutType} className="btn-primary flex-1 disabled:opacity-50">
-            完成打卡
+          <button onClick={handleSubmit} disabled={!selectedAppointment || !workoutType || submitting} className="btn-primary flex-1 disabled:opacity-50">
+            {submitting ? '打卡中...' : '完成打卡'}
           </button>
         </div>
       </div>
