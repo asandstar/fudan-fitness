@@ -16,6 +16,26 @@ import { genId } from './utils';
 
 const LS_PREFIX = 'ff_hybrid_';
 
+const SESSION_USER_KEY = 'ff_session_user_id';
+const LEGACY_SESSION_KEYS = ['ff_current_user_id', 'ff_hybrid_current_user_id'];
+
+function migrateSessionKeyIfNeeded(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (localStorage.getItem(SESSION_USER_KEY)) return;
+    for (const oldKey of LEGACY_SESSION_KEYS) {
+      const val = localStorage.getItem(oldKey);
+      if (val !== null) {
+        localStorage.setItem(SESSION_USER_KEY, val);
+        localStorage.removeItem(oldKey);
+        return;
+      }
+    }
+  } catch {
+    // ignore
+  }
+}
+
 function readLS<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
   try {
@@ -71,7 +91,8 @@ function getMockTrainingRecords(): TrainingRecord[] {
 function getCurrentUserId(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    return localStorage.getItem(LS_PREFIX + 'current_user_id');
+    migrateSessionKeyIfNeeded();
+    return localStorage.getItem(SESSION_USER_KEY);
   } catch {
     return null;
   }
@@ -81,9 +102,15 @@ function setCurrentUserId(id: string | null): void {
   if (typeof window === 'undefined') return;
   try {
     if (id) {
-      localStorage.setItem(LS_PREFIX + 'current_user_id', id);
+      localStorage.setItem(SESSION_USER_KEY, id);
+      for (const oldKey of LEGACY_SESSION_KEYS) {
+        localStorage.removeItem(oldKey);
+      }
     } else {
-      localStorage.removeItem(LS_PREFIX + 'current_user_id');
+      localStorage.removeItem(SESSION_USER_KEY);
+      for (const oldKey of LEGACY_SESSION_KEYS) {
+        localStorage.removeItem(oldKey);
+      }
     }
   } catch {
     // ignore
@@ -145,26 +172,7 @@ async function mockCreateBooking(draft: BookingDraft): Promise<Appointment> {
   appointments.push(appointment);
   writeLS('appointments', appointments);
 
-  const coaches = getMockCoaches();
-  const coach = coaches.find((c) => c.id === draft.coachId);
-  if (coach) {
-    await mockAddNotification({
-      userId: coach.userId,
-      type: 'booking_approved',
-      title: '新的预约请求',
-      content: `${currentUser.name} 预约了您的带练时段: ${draft.date} ${draft.startTime}-${draft.endTime}`,
-      relatedId: appointment.id,
-    });
-  }
-
-  await mockAddNotification({
-    userId: currentUserId,
-    type: 'booking_approved',
-    title: '预约提交成功',
-    content: `您已预约 ${coach?.name || ''} 的带练时段: ${draft.date} ${draft.startTime}-${draft.endTime}, 等待教练审核`,
-    relatedId: appointment.id,
-  });
-
+  // Phase 1B: 通知职责归 Context 层，数据层不再创建通知
   return appointment;
 }
 
@@ -194,14 +202,7 @@ async function mockApproveAppointment(id: string): Promise<void> {
     updatedAt: new Date().toISOString(),
   };
   writeLS('appointments', appointments);
-
-  await mockAddNotification({
-    userId: appointments[idx].studentId,
-    type: 'booking_approved',
-    title: '预约已确认',
-    content: `您的预约已被教练确认: ${appointments[idx].date} ${appointments[idx].startTime}-${appointments[idx].endTime}`,
-    relatedId: id,
-  });
+  // Phase 1B: 通知职责归 Context 层
 }
 
 async function mockRejectAppointment(id: string, reason: string): Promise<void> {
@@ -216,14 +217,7 @@ async function mockRejectAppointment(id: string, reason: string): Promise<void> 
     updatedAt: new Date().toISOString(),
   };
   writeLS('appointments', appointments);
-
-  await mockAddNotification({
-    userId: appointments[idx].studentId,
-    type: 'booking_rejected',
-    title: '预约被拒绝',
-    content: `您的预约被教练拒绝: ${reason}`,
-    relatedId: id,
-  });
+  // Phase 1B: 通知职责归 Context 层
 }
 
 async function mockAddSlot(slot: Omit<CoachSlot, 'id'>): Promise<CoachSlot> {
@@ -369,6 +363,165 @@ async function mockGetCurrentUser(): Promise<User | null> {
   if (!userId) return null;
   const users = getMockUsers();
   return users.find((u) => u.id === userId) || null;
+}
+
+// ===== Phase 1B: 9 个持久化方法 mock 实现 =====
+
+async function mockCompleteAppointment(appointmentId: string): Promise<void> {
+  const appointments = getMockAppointments();
+  const idx = appointments.findIndex((a) => a.id === appointmentId);
+  if (idx === -1) throw new Error('预约不存在');
+  if (appointments[idx].status !== 'approved') {
+    throw new Error('只有已确认的预约才能标记完成');
+  }
+
+  appointments[idx] = {
+    ...appointments[idx],
+    status: 'completed',
+    updatedAt: new Date().toISOString(),
+  };
+  writeLS('appointments', appointments);
+
+  // 同步增加教练 totalSessions
+  const coaches = getMockCoaches();
+  const coachIdx = coaches.findIndex((c) => c.id === appointments[idx].coachId);
+  if (coachIdx !== -1) {
+    coaches[coachIdx] = { ...coaches[coachIdx], totalSessions: coaches[coachIdx].totalSessions + 1 };
+    writeLS('coaches', coaches);
+  }
+}
+
+// 教练资料可编辑字段白名单 — 管理字段（certStatus/reviewedBy 等）禁止通过此入口修改
+function filterCoachEditablePatch(patch: Partial<CoachProfile>): Partial<CoachProfile> {
+  const safe: Partial<CoachProfile> = {};
+  if (patch.specialties !== undefined) safe.specialties = patch.specialties;
+  if (patch.styleDesc !== undefined) safe.styleDesc = patch.styleDesc;
+  if (patch.isBeginnerFriendly !== undefined) safe.isBeginnerFriendly = patch.isBeginnerFriendly;
+  if (patch.isFemaleFriendly !== undefined) safe.isFemaleFriendly = patch.isFemaleFriendly;
+  if (patch.venues !== undefined) safe.venues = patch.venues;
+  if (patch.trainingPhilosophy !== undefined) safe.trainingPhilosophy = patch.trainingPhilosophy;
+  if (patch.rating !== undefined) safe.rating = patch.rating;
+  if (patch.successCases !== undefined) safe.successCases = patch.successCases;
+  return safe;
+}
+
+async function mockUpdateCoachProfile(coachId: string, patch: Partial<CoachProfile>): Promise<void> {
+  const coaches = getMockCoaches();
+  const idx = coaches.findIndex((c) => c.id === coachId);
+  if (idx === -1) throw new Error('教练资料不存在');
+
+  const safePatch = filterCoachEditablePatch(patch);
+  coaches[idx] = { ...coaches[idx], ...safePatch };
+  writeLS('coaches', coaches);
+}
+
+async function mockApplyCoach(
+  draft: Omit<CoachProfile, 'id' | 'createdAt' | 'totalSessions' | 'totalStudents' | 'certStatus' | 'certAppliedAt'>,
+): Promise<CoachProfile> {
+  const currentUserId = getCurrentUserId();
+  if (!currentUserId) throw new Error('请先登录');
+
+  const coaches = getMockCoaches();
+  // 防止重复申请
+  const existing = coaches.find(
+    (c) => c.userId === currentUserId && ['pending', 'approved'].includes(c.certStatus),
+  );
+  if (existing) throw new Error('您已有待审核或已通过的教练申请');
+
+  const users = getMockUsers();
+  const user = users.find((u) => u.id === currentUserId);
+  if (!user) throw new Error('用户不存在');
+
+  const newCoach: CoachProfile = {
+    ...draft,
+    id: genId('c'),
+    userId: currentUserId,
+    name: user.name,
+    department: user.department,
+    grade: user.grade,
+    totalSessions: 0,
+    totalStudents: 0,
+    certStatus: 'pending',
+    certAppliedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+  };
+  coaches.push(newCoach);
+  writeLS('coaches', coaches);
+  return newCoach;
+}
+
+async function mockApproveCoach(coachId: string, reviewedBy: string): Promise<void> {
+  const coaches = getMockCoaches();
+  const idx = coaches.findIndex((c) => c.id === coachId);
+  if (idx === -1) throw new Error('教练资料不存在');
+  if (coaches[idx].certStatus !== 'pending') {
+    throw new Error('该教练申请已处理');
+  }
+
+  coaches[idx] = {
+    ...coaches[idx],
+    certStatus: 'approved',
+    certReviewedAt: new Date().toISOString(),
+    reviewedBy,
+  };
+  writeLS('coaches', coaches);
+
+  // 同步更新用户角色为 coach
+  const users = getMockUsers();
+  const userIdx = users.findIndex((u) => u.id === coaches[idx].userId);
+  if (userIdx !== -1) {
+    users[userIdx] = { ...users[userIdx], role: 'coach' };
+    writeLS('users', users);
+  }
+}
+
+async function mockRejectCoach(coachId: string, reason: string, reviewedBy: string): Promise<void> {
+  const coaches = getMockCoaches();
+  const idx = coaches.findIndex((c) => c.id === coachId);
+  if (idx === -1) throw new Error('教练资料不存在');
+  if (coaches[idx].certStatus !== 'pending') {
+    throw new Error('该教练申请已处理');
+  }
+
+  coaches[idx] = {
+    ...coaches[idx],
+    certStatus: 'rejected',
+    certReviewNote: reason,
+    certReviewedAt: new Date().toISOString(),
+    reviewedBy,
+  };
+  writeLS('coaches', coaches);
+}
+
+async function mockDeleteAnnouncement(id: string): Promise<void> {
+  const announcements = getMockAnnouncements();
+  const filtered = announcements.filter((a) => a.id !== id);
+  writeLS('announcements', filtered);
+}
+
+async function mockUnbanUser(userId: string): Promise<void> {
+  const users = getMockUsers();
+  const idx = users.findIndex((u) => u.id === userId);
+  if (idx === -1) throw new Error('用户不存在');
+  users[idx] = { ...users[idx], violationCount: 0, bannedUntil: null };
+  writeLS('users', users);
+}
+
+async function mockMarkAllNotificationsRead(userId: string): Promise<void> {
+  const notifications = getMockNotifications();
+  const updated = notifications.map((n) =>
+    n.userId === userId ? { ...n, read: true } : n,
+  );
+  writeLS('notifications', updated);
+}
+
+async function mockDeleteNotification(notificationId: string, userId: string): Promise<void> {
+  const notifications = getMockNotifications();
+  const target = notifications.find((n) => n.id === notificationId);
+  if (!target) throw new Error('通知不存在');
+  if (target.userId !== userId) throw new Error('无权删除他人的通知');
+  const filtered = notifications.filter((n) => n.id !== notificationId);
+  writeLS('notifications', filtered);
 }
 
 export async function getVenues(): Promise<Venue[]> {
@@ -539,4 +692,102 @@ export async function getCurrentUser(): Promise<User | null> {
     return api.getCurrentUser();
   }
   return mockGetCurrentUser();
+}
+
+// ===== Phase 1B: 9 个持久化方法路由 =====
+
+/**
+ * 教练完成带练
+ * - 验证 appointment.status === 'approved'
+ * - 更新 appointment.status = 'completed' + updatedAt
+ * - 同步增加 coach.totalSessions（防重复）
+ * - 通知由 Context 层负责
+ */
+export async function completeAppointment(appointmentId: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return api.completeAppointment(appointmentId);
+  }
+  return mockCompleteAppointment(appointmentId);
+}
+
+/**
+ * 教练更新自己的资料（白名单过滤管理字段）
+ */
+export async function updateCoachProfile(coachId: string, patch: Partial<CoachProfile>): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return api.updateCoachProfile(coachId, patch);
+  }
+  return mockUpdateCoachProfile(coachId, patch);
+}
+
+/**
+ * 学员申请教练 — 防止重复申请
+ */
+export async function applyCoach(
+  draft: Omit<CoachProfile, 'id' | 'createdAt' | 'totalSessions' | 'totalStudents' | 'certStatus' | 'certAppliedAt'>,
+): Promise<CoachProfile> {
+  if (isSupabaseConfigured()) {
+    return api.applyCoach(draft);
+  }
+  return mockApplyCoach(draft);
+}
+
+/**
+ * 管理员通过教练申请 — 同时更新 certStatus + profiles.role
+ */
+export async function approveCoach(coachId: string, reviewedBy: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return api.approveCoach(coachId, reviewedBy);
+  }
+  return mockApproveCoach(coachId, reviewedBy);
+}
+
+/**
+ * 管理员拒绝教练申请 — 保存原因
+ */
+export async function rejectCoach(coachId: string, reason: string, reviewedBy: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return api.rejectCoach(coachId, reason, reviewedBy);
+  }
+  return mockRejectCoach(coachId, reason, reviewedBy);
+}
+
+/**
+ * 删除公告
+ */
+export async function deleteAnnouncement(id: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return api.deleteAnnouncement(id);
+  }
+  return mockDeleteAnnouncement(id);
+}
+
+/**
+ * 解禁用户 — 清零 violationCount + 清空 bannedUntil
+ */
+export async function unbanUser(userId: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return api.unbanUser(userId);
+  }
+  return mockUnbanUser(userId);
+}
+
+/**
+ * 标记当前用户所有通知为已读
+ */
+export async function markAllNotificationsRead(userId: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return api.markAllNotificationsRead(userId);
+  }
+  return mockMarkAllNotificationsRead(userId);
+}
+
+/**
+ * 删除通知 — 带归属校验
+ */
+export async function deleteNotification(notificationId: string, userId: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return api.deleteNotification(notificationId, userId);
+  }
+  return mockDeleteNotification(notificationId, userId);
 }

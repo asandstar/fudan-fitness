@@ -36,11 +36,21 @@ import {
   getTrainingRecords,
   login,
   logout,
+  getCurrentUser,
   register as apiRegister,
   createBooking as apiCreateBooking,
   cancelBooking as apiCancelBooking,
   approveAppointment as apiApproveAppointment,
   rejectAppointment as apiRejectAppointment,
+  completeAppointment as apiCompleteAppointment,
+  updateCoachProfile as apiUpdateCoachProfile,
+  applyCoach as apiApplyCoach,
+  approveCoach as apiApproveCoach,
+  rejectCoach as apiRejectCoach,
+  deleteAnnouncement as apiDeleteAnnouncement,
+  unbanUser as apiUnbanUser,
+  markAllNotificationsRead as apiMarkAllNotificationsRead,
+  deleteNotification as apiDeleteNotification,
   addSlot as apiAddSlot,
   toggleSlot as apiToggleSlot,
   createAnnouncement as apiCreateAnnouncement,
@@ -49,6 +59,13 @@ import {
   addTrainingRecord as apiAddTrainingRecord,
   toggleFavoriteCoach as apiToggleFavoriteCoach,
 } from '@/lib/hybrid-store';
+
+/** 错误归一化 — 将 unknown 转为可读字符串 */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return '操作失败，请稍后重试';
+}
 
 interface AppContextValue {
   users: User[];
@@ -63,6 +80,8 @@ interface AppContextValue {
 
   currentUser: User | null;
   currentCoach: CoachProfile | null;
+  isLoading: boolean;
+  initError: string | null;
   login: (studentId: string, password: string) => Promise<User | null>;
   register: (params: { studentId: string; password: string; name: string; department: string; grade: string }) => Promise<User>;
   logout: () => Promise<void>;
@@ -75,20 +94,20 @@ interface AppContextValue {
   coachCompleteAppointment: (appointmentId: string) => Promise<void>;
   coachToggleSlot: (slotId: string) => Promise<void>;
   coachAddSlot: (slot: Omit<CoachSlot, 'id'>) => Promise<void>;
-  coachUpdateProfile: (patch: Partial<CoachProfile>) => void;
+  coachUpdateProfile: (patch: Partial<CoachProfile>) => Promise<void>;
 
-  applyCoach: (draft: Partial<CoachProfile> & { specialties: string[]; styleDesc: string }) => void;
+  applyCoach: (draft: Partial<CoachProfile> & { specialties: string[]; styleDesc: string }) => Promise<void>;
 
-  adminApproveCoach: (coachId: string) => void;
-  adminRejectCoach: (coachId: string, reason: string) => void;
+  adminApproveCoach: (coachId: string) => Promise<void>;
+  adminRejectCoach: (coachId: string, reason: string) => Promise<void>;
   adminPublishAnnouncement: (a: Omit<Announcement, 'id' | 'publishedAt'>) => Promise<void>;
-  adminDeleteAnnouncement: (id: string) => void;
-  adminUnbanUser: (userId: string) => void;
+  adminDeleteAnnouncement: (id: string) => Promise<void>;
+  adminUnbanUser: (userId: string) => Promise<void>;
 
   addNotification: (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => Promise<void>;
   markNotificationRead: (id: string) => Promise<void>;
   markAllNotificationsRead: () => Promise<void>;
-  deleteNotification: (id: string) => void;
+  deleteNotification: (id: string) => Promise<void>;
   getUnreadCount: () => number;
 
   addTrainingRecord: (record: Omit<TrainingRecord, 'id' | 'createdAt'>) => Promise<void>;
@@ -115,49 +134,71 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [trainingRecords, setTrainingRecords] = useState<TrainingRecord[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  const loadPublicData = useCallback(async () => {
+    const [vs, cs, ss, aps, ans] = await Promise.all([
+      getVenues(),
+      getCoaches(),
+      getSlots(),
+      getAppointments(),
+      getAnnouncements(),
+    ]);
+    setVenues(vs);
+    setCoaches(cs);
+    setSlots(ss);
+    setAppointments(aps);
+    setAnnouncements(ans);
+  }, []);
+
+  const loadUserData = useCallback(async (user: User) => {
+    const [notifs, records] = await Promise.all([
+      getNotifications(user.id),
+      getTrainingRecords(user.id),
+    ]);
+    setNotifications(notifs);
+    setTrainingRecords(records);
+  }, []);
 
   const refreshData = useCallback(async () => {
     try {
-      const [vs, cs, ss, aps, ans] = await Promise.all([
-        getVenues(),
-        getCoaches(),
-        getSlots(),
-        getAppointments(),
-        getAnnouncements(),
-      ]);
-      setVenues(vs);
-      setCoaches(cs);
-      setSlots(ss);
-      setAppointments(aps);
-      setAnnouncements(ans);
-
+      await loadPublicData();
       if (currentUser) {
-        const [notifs, records] = await Promise.all([
-          getNotifications(currentUser.id),
-          getTrainingRecords(currentUser.id),
-        ]);
-        setNotifications(notifs);
-        setTrainingRecords(records);
+        await loadUserData(currentUser);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('refreshData failed', err);
     }
-  }, [currentUser]);
+  }, [currentUser, loadPublicData, loadUserData]);
 
   useEffect(() => {
+    let cancelled = false;
     const init = async () => {
       try {
-        const user = await login('', '');
-        setCurrentUser(user);
-        await refreshData();
-      } catch {
-        // ignore
+        await loadPublicData();
+        const user = await getCurrentUser();
+        if (!cancelled) {
+          setCurrentUser(user);
+          if (user) {
+            await loadUserData(user);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setInitError(err instanceof Error ? err.message : '初始化失败');
+          console.error('App init failed', err);
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     };
     init();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [loadPublicData, loadUserData]);
 
   const currentCoach = useMemo(
     () => (currentUser?.role === 'coach' ? coaches.find((c) => c.userId === currentUser.id) ?? null : null),
@@ -168,10 +209,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const user = await login(studentId, password);
     if (user) {
       setCurrentUser(user);
-      await refreshData();
+      await loadUserData(user);
     }
     return user;
-  }, [refreshData]);
+  }, [loadUserData]);
 
   const registerHandler = useCallback(async (params: {
     studentId: string;
@@ -182,15 +223,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }): Promise<User> => {
     const user = await apiRegister(params);
     setCurrentUser(user);
-    await refreshData();
+    await loadUserData(user);
     return user;
-  }, [refreshData]);
+  }, [loadUserData]);
 
   const logoutHandler = useCallback(async () => {
     await logout();
     setCurrentUser(null);
     setNotifications([]);
     setTrainingRecords([]);
+    setViolations([]);
   }, []);
 
   const addNotification = useCallback(async (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
@@ -206,12 +248,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const markAllNotificationsRead = useCallback(async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  }, []);
+    if (!currentUser) throw new Error('请先登录');
+    await apiMarkAllNotificationsRead(currentUser.id);
+    setNotifications((prev) => prev.map((n) => (n.userId === currentUser.id ? { ...n, read: true } : n)));
+  }, [currentUser]);
 
-  const deleteNotification = useCallback((id: string) => {
+  const deleteNotification = useCallback(async (id: string) => {
+    if (!currentUser) throw new Error('请先登录');
+    await apiDeleteNotification(id, currentUser.id);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }, []);
+  }, [currentUser]);
 
   const getUnreadCount = useCallback(() => {
     if (!currentUser) return 0;
@@ -362,108 +408,120 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [currentUser, appointments]);
 
   const coachApproveAppointment = useCallback(async (appointmentId: string) => {
+    // 1. 在 state 中查找目标预约，验证当前状态
+    const appt = appointments.find((a) => a.id === appointmentId);
+    if (!appt) throw new Error('预约不存在');
+    if (appt.status !== 'pending') throw new Error('该预约当前状态不可审核');
+
+    // 2. 调用数据层持久化
+    await apiApproveAppointment(appointmentId);
+
+    // 3. 更新 state（纯函数 updater，无副作用）
+    const now = new Date().toISOString();
+    setAppointments((prev) =>
+      prev.map((a) => (a.id === appointmentId ? { ...a, status: 'approved' as const, updatedAt: now } : a)),
+    );
+
+    // 4. 在 updater 之外发送通知（Strict Mode 安全）
     try {
-      await apiApproveAppointment(appointmentId);
-      setAppointments((prev) =>
-        prev.map((a) => {
-          if (a.id === appointmentId && a.status === 'pending') {
-            const updated = { ...a, status: 'approved' as const, updatedAt: new Date().toISOString() };
-            addNotification({
-              userId: a.studentId,
-              type: 'booking_approved',
-              title: '预约已确认',
-              content: `您的预约已被教练确认: ${a.date} ${a.startTime}-${a.endTime}`,
-              relatedId: a.id,
-            });
-            return updated;
-          }
-          return a;
-        }),
-      );
-    } catch {
-      // ignore
+      await addNotification({
+        userId: appt.studentId,
+        type: 'booking_approved',
+        title: '预约已确认',
+        content: `您的预约已被教练确认: ${appt.date} ${appt.startTime}-${appt.endTime}`,
+        relatedId: appt.id,
+      });
+    } catch (notifErr) {
+      // 通知发送失败不阻断主流程，仅记录日志
+      console.warn('发送预约确认通知失败', getErrorMessage(notifErr));
     }
-  }, [addNotification]);
+  }, [appointments, addNotification]);
 
   const coachRejectAppointment = useCallback(async (appointmentId: string, reason: string) => {
+    const appt = appointments.find((a) => a.id === appointmentId);
+    if (!appt) throw new Error('预约不存在');
+    if (appt.status !== 'pending') throw new Error('该预约当前状态不可审核');
+
+    await apiRejectAppointment(appointmentId, reason);
+
+    const now = new Date().toISOString();
+    setAppointments((prev) =>
+      prev.map((a) =>
+        a.id === appointmentId
+          ? { ...a, status: 'rejected' as const, cancelReason: reason, updatedAt: now }
+          : a,
+      ),
+    );
+
     try {
-      await apiRejectAppointment(appointmentId, reason);
-      setAppointments((prev) =>
-        prev.map((a) => {
-          if (a.id === appointmentId && a.status === 'pending') {
-            const updated = { ...a, status: 'rejected' as const, cancelReason: reason, updatedAt: new Date().toISOString() };
-            addNotification({
-              userId: a.studentId,
-              type: 'booking_rejected',
-              title: '预约被拒绝',
-              content: `您的预约被教练拒绝: ${reason}`,
-              relatedId: a.id,
-            });
-            return updated;
-          }
-          return a;
-        }),
-      );
-    } catch {
-      // ignore
+      await addNotification({
+        userId: appt.studentId,
+        type: 'booking_rejected',
+        title: '预约被拒绝',
+        content: `您的预约被教练拒绝: ${reason}`,
+        relatedId: appt.id,
+      });
+    } catch (notifErr) {
+      console.warn('发送预约拒绝通知失败', getErrorMessage(notifErr));
     }
-  }, [addNotification]);
+  }, [appointments, addNotification]);
 
   const coachCompleteAppointment = useCallback(async (appointmentId: string) => {
+    // 1. 在 state 中查找目标预约，验证当前状态
+    const appt = appointments.find((a) => a.id === appointmentId);
+    if (!appt) throw new Error('预约不存在');
+    if (appt.status !== 'approved') throw new Error('只有已确认的预约才能标记完成');
+
+    // 2. 调用数据层持久化（含教练 totalSessions 增加，数据层负责防重复）
+    await apiCompleteAppointment(appointmentId);
+
+    // 3. 更新 appointment state（纯函数 updater）
+    const now = new Date().toISOString();
     setAppointments((prev) =>
-      prev.map((a) => {
-        if (a.id === appointmentId && a.status === 'approved') {
-          const updated = { ...a, status: 'completed' as const, updatedAt: new Date().toISOString() };
-          addNotification({
-            userId: a.studentId,
-            type: 'booking_completed',
-            title: '训练已完成',
-            content: `您与教练的带练已完成: ${a.date} ${a.startTime}-${a.endTime}, 记得打卡记录训练成果哦!`,
-            relatedId: a.id,
-          });
-          return updated;
-        }
-        return a;
-      }),
+      prev.map((a) => (a.id === appointmentId ? { ...a, status: 'completed' as const, updatedAt: now } : a)),
     );
+
+    // 4. 更新教练 totalSessions（同步 state 与数据层一致）
     setCoaches((prev) =>
-      prev.map((c) => {
-        const appt = appointments.find((a) => a.id === appointmentId);
-        if (appt && c.id === appt.coachId) {
-          return { ...c, totalSessions: c.totalSessions + 1 };
-        }
-        return c;
-      }),
+      prev.map((c) => (c.id === appt.coachId ? { ...c, totalSessions: c.totalSessions + 1 } : c)),
     );
+
+    // 5. 在 updater 之外发送通知
+    try {
+      await addNotification({
+        userId: appt.studentId,
+        type: 'booking_completed',
+        title: '训练已完成',
+        content: `您与教练的带练已完成: ${appt.date} ${appt.startTime}-${appt.endTime}, 记得打卡记录训练成果哦!`,
+        relatedId: appt.id,
+      });
+    } catch (notifErr) {
+      console.warn('发送训练完成通知失败', getErrorMessage(notifErr));
+    }
   }, [appointments, addNotification]);
 
   const coachToggleSlot = useCallback(async (slotId: string) => {
-    try {
-      await apiToggleSlot(slotId);
-      setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, isAvailable: !s.isAvailable } : s)));
-    } catch {
-      // ignore
-    }
+    await apiToggleSlot(slotId);
+    setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, isAvailable: !s.isAvailable } : s)));
   }, []);
 
   const coachAddSlot = useCallback(async (slot: Omit<CoachSlot, 'id'>) => {
-    try {
-      const newSlot = await apiAddSlot(slot);
-      setSlots((prev) => [...prev, newSlot]);
-    } catch {
-      // ignore
-    }
+    const newSlot = await apiAddSlot(slot);
+    setSlots((prev) => [...prev, newSlot]);
   }, []);
 
-  const coachUpdateProfile = useCallback((patch: Partial<CoachProfile>) => {
-    if (!currentCoach) return;
+  const coachUpdateProfile = useCallback(async (patch: Partial<CoachProfile>) => {
+    if (!currentCoach) throw new Error('当前用户不是教练');
+    // 数据层负责白名单过滤管理字段
+    await apiUpdateCoachProfile(currentCoach.id, patch);
     setCoaches((prev) => prev.map((c) => (c.id === currentCoach.id ? { ...c, ...patch } : c)));
   }, [currentCoach]);
 
-  const applyCoach = useCallback((draft: Partial<CoachProfile> & { specialties: string[]; styleDesc: string }) => {
-    if (!currentUser) return;
-    const newCoach: CoachProfile = {
-      id: genId('c'),
+  const applyCoach = useCallback(async (draft: Partial<CoachProfile> & { specialties: string[]; styleDesc: string }) => {
+    if (!currentUser) throw new Error('请先登录');
+
+    // 数据层负责防止重复申请 + 填充用户信息 + 持久化
+    const newCoach = await apiApplyCoach({
       userId: currentUser.id,
       name: currentUser.name,
       department: currentUser.department,
@@ -472,65 +530,90 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       styleDesc: draft.styleDesc,
       isBeginnerFriendly: draft.isBeginnerFriendly ?? false,
       isFemaleFriendly: draft.isFemaleFriendly ?? false,
-      totalSessions: 0,
-      totalStudents: 0,
-      certStatus: 'pending',
-      certAppliedAt: new Date().toISOString(),
       venues: draft.venues ?? [],
-      createdAt: new Date().toISOString(),
-    };
+      trainingPhilosophy: draft.trainingPhilosophy,
+      rating: draft.rating,
+      successCases: draft.successCases,
+    });
     setCoaches((prev) => [...prev, newCoach]);
   }, [currentUser]);
 
-  const adminApproveCoach = useCallback((coachId: string) => {
+  const adminApproveCoach = useCallback(async (coachId: string) => {
+    // 客户端权限校验（后端权限留待 Phase 2 RLS）
+    if (!currentUser || currentUser.role !== 'admin') {
+      throw new Error('无权限执行此操作');
+    }
+
     const coach = coaches.find((c) => c.id === coachId);
+    if (!coach) throw new Error('教练资料不存在');
+    if (coach.certStatus !== 'pending') throw new Error('该教练申请已处理');
+
+    // 数据层负责同时更新 certStatus + profiles.role
+    await apiApproveCoach(coachId, currentUser.id);
+
+    const now = new Date().toISOString();
     setCoaches((prev) =>
-      prev.map((c) => {
-        if (c.id === coachId && c.certStatus === 'pending') {
-          const updated = { ...c, certStatus: 'approved' as const, certReviewedAt: new Date().toISOString() };
-          if (coach) {
-            addNotification({
-              userId: coach.userId,
-              type: 'coach_approved',
-              title: '教练认证通过',
-              content: '恭喜!您的教练认证申请已通过,现在可以开始接受预约了',
-              relatedId: coach.id,
-            });
-          }
-          return updated;
-        }
-        return c;
-      }),
+      prev.map((c) =>
+        c.id === coachId
+          ? { ...c, certStatus: 'approved' as const, certReviewedAt: now, reviewedBy: currentUser.id }
+          : c,
+      ),
     );
     setUsers((prev) =>
-      prev.map((u) => {
-        if (coach && u.id === coach.userId) return { ...u, role: 'coach' as const };
-        return u;
-      }),
+      prev.map((u) => (u.id === coach.userId ? { ...u, role: 'coach' as const } : u)),
     );
-  }, [coaches, addNotification]);
 
-  const adminRejectCoach = useCallback((coachId: string, reason: string) => {
+    try {
+      await addNotification({
+        userId: coach.userId,
+        type: 'coach_approved',
+        title: '教练认证通过',
+        content: '恭喜!您的教练认证申请已通过,现在可以开始接受预约了',
+        relatedId: coach.id,
+      });
+    } catch (notifErr) {
+      console.warn('发送教练认证通过通知失败', getErrorMessage(notifErr));
+    }
+  }, [currentUser, coaches, addNotification]);
+
+  const adminRejectCoach = useCallback(async (coachId: string, reason: string) => {
+    if (!currentUser || currentUser.role !== 'admin') {
+      throw new Error('无权限执行此操作');
+    }
+
     const coach = coaches.find((c) => c.id === coachId);
+    if (!coach) throw new Error('教练资料不存在');
+    if (coach.certStatus !== 'pending') throw new Error('该教练申请已处理');
+
+    await apiRejectCoach(coachId, reason, currentUser.id);
+
+    const now = new Date().toISOString();
     setCoaches((prev) =>
-      prev.map((c) => {
-        if (c.id === coachId && c.certStatus === 'pending') {
-          const updated = { ...c, certStatus: 'rejected' as const, certReviewNote: reason, certReviewedAt: new Date().toISOString() };
-          if (coach) {
-            addNotification({
-              userId: coach.userId,
-              type: 'coach_rejected',
-              title: '教练认证未通过',
-              content: `您的教练认证申请未通过,原因: ${reason}`,
-              relatedId: coach.id,
-            });
-          }
-          return updated;
-        }
-        return c;
-      }),
+      prev.map((c) =>
+        c.id === coachId
+          ? {
+              ...c,
+              certStatus: 'rejected' as const,
+              certReviewNote: reason,
+              certReviewedAt: now,
+              reviewedBy: currentUser.id,
+            }
+          : c,
+      ),
     );
-  }, [coaches, addNotification]);
+
+    try {
+      await addNotification({
+        userId: coach.userId,
+        type: 'coach_rejected',
+        title: '教练认证未通过',
+        content: `您的教练认证申请未通过,原因: ${reason}`,
+        relatedId: coach.id,
+      });
+    } catch (notifErr) {
+      console.warn('发送教练认证拒绝通知失败', getErrorMessage(notifErr));
+    }
+  }, [currentUser, coaches, addNotification]);
 
   const adminPublishAnnouncement = useCallback(async (a: Omit<Announcement, 'id' | 'publishedAt'>) => {
     await apiCreateAnnouncement(a);
@@ -540,23 +623,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     ]);
   }, []);
 
-  const adminDeleteAnnouncement = useCallback((id: string) => {
+  const adminDeleteAnnouncement = useCallback(async (id: string) => {
+    await apiDeleteAnnouncement(id);
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
   }, []);
 
-  const adminUnbanUser = useCallback((userId: string) => {
+  const adminUnbanUser = useCallback(async (userId: string) => {
+    if (!currentUser || currentUser.role !== 'admin') {
+      throw new Error('无权限执行此操作');
+    }
+    await apiUnbanUser(userId);
     setUsers((prev) =>
       prev.map((u) => (u.id === userId ? { ...u, bannedUntil: null, violationCount: 0 } : u)),
     );
-  }, []);
+  }, [currentUser]);
 
   const addTrainingRecord = useCallback(async (record: Omit<TrainingRecord, 'id' | 'createdAt'>) => {
-    try {
-      const newRecord = await apiAddTrainingRecord(record);
-      setTrainingRecords((prev) => [newRecord, ...prev]);
-    } catch {
-      // ignore
-    }
+    const newRecord = await apiAddTrainingRecord(record);
+    setTrainingRecords((prev) => [newRecord, ...prev]);
   }, []);
 
   const getTrainingStats = useCallback((userId: string): TrainingStats => {
@@ -657,6 +741,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     trainingRecords,
     currentUser,
     currentCoach,
+    isLoading,
+    initError,
     login: loginHandler,
     register: registerHandler,
     logout: logoutHandler,
