@@ -7,3 +7,5 @@ build
 .env*.local
 next-env.d.ts
 .vercel
+*.tsbuildinfo
+.trae/documents/
