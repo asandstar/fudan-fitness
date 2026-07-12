@@ -330,6 +330,36 @@ async function mockLogin(studentId: string, password: string): Promise<User | nu
   return null;
 }
 
+async function mockRegister(params: {
+  studentId: string;
+  password: string;
+  name: string;
+  department: string;
+  grade: string;
+}): Promise<User> {
+  const users = getMockUsers();
+  if (users.find((u) => u.studentId === params.studentId)) {
+    throw new Error('该学号已注册');
+  }
+  const newUser: User = {
+    id: genId('u'),
+    studentId: params.studentId,
+    password: params.password,
+    name: params.name,
+    department: params.department,
+    grade: params.grade,
+    role: 'member',
+    violationCount: 0,
+    bannedUntil: null,
+    favoriteCoaches: [],
+    createdAt: new Date().toISOString(),
+  };
+  users.push(newUser);
+  writeLS('users', users);
+  setCurrentUserId(newUser.id);
+  return newUser;
+}
+
 async function mockLogout(): Promise<void> {
   setCurrentUserId(null);
 }
@@ -482,6 +512,19 @@ export async function login(studentId: string, password: string): Promise<User |
     return api.loginByStudentId(studentId, password);
   }
   return mockLogin(studentId, password);
+}
+
+export async function register(params: {
+  studentId: string;
+  password: string;
+  name: string;
+  department: string;
+  grade: string;
+}): Promise<User> {
+  if (isSupabaseConfigured()) {
+    return api.registerByStudentId(params);
+  }
+  return mockRegister(params);
 }
 
 export async function logout(): Promise<void> {

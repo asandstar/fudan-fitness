@@ -84,7 +84,7 @@ const EQUIPMENTS = [
 const HIGHLIGHTS = [
   { icon: Award, title: '专业认证教练', desc: '所有教练经严格认证审核,平均带练经验2年以上', color: 'primary' },
   { icon: MapPin, title: '全覆盖6大校区', desc: '邯郸南区/北区、五六教工会、江湾、枫林、张江', color: 'info' },
-  { icon: Shield, title: '科学训练体系', desc: '参考ACSM/NSCA国际标准,动作规范优先', color: 'success' },
+  { icon: Shield, title: '科学训练体系', desc: '参考中国体育科学学会+国际权威标准,动作规范优先', color: 'success' },
   { icon: Users, title: '社团互助氛围', desc: '学生互助带练,零基础友好,无门槛参与', color: 'accent' },
 ];
 

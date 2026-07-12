@@ -204,7 +204,7 @@ function BookingInner() {
       coachId,
       trainingNote: trainingNote.slice(0, TRAINING_NOTE_MAX),
     };
-    const result = createBooking(draft);
+    const result = await createBooking(draft);
     setSubmitting(false);
 
     if (!result.ok) {
