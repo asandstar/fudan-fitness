@@ -37,7 +37,7 @@ export default function Footer() {
           请勿输入真实密码、隐私信息或敏感健康数据。
         </p>
         <p className="text-xs text-text-tertiary">
-          © {new Date().getFullYear()} 复旦健身社互助预约平台 · 学生社团内部使用 · MVP Demo
+          © {new Date().getFullYear()} 复旦健身爱好者互助平台 · MVP Demo
         </p>
       </div>
     </footer>
