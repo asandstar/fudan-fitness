@@ -956,7 +956,7 @@ export const mockAppointments: Appointment[] = [
 export const mockAnnouncements: Announcement[] = [
   {
     id: 'ann1',
-    title: '【重要】2025年秋季学期带练预约已开放',
+    title: '【重要】本学期带练预约现已开放',
     content:
       '本学期邯郸南区、北区、五六教工会三场馆带练预约现已开放。欢迎新老社员预约,每周每人最多预约3次。请仔细阅读预约规则后再提交。',
     isPinned: true,

@@ -31,8 +31,14 @@ export default function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-border-light py-4 text-center text-xs text-text-tertiary">
-        © 2025 复旦健身社互助预约平台 · 学生社团内部使用 · MVP Demo
+      <div className="border-t border-border-light py-4 text-center">
+        <p className="text-[11px] text-text-tertiary leading-relaxed px-4 mb-2">
+          本项目为校园健身互助平台 Demo，当前展示内容及账号数据均为演示用途。
+          请勿输入真实密码、隐私信息或敏感健康数据。
+        </p>
+        <p className="text-xs text-text-tertiary">
+          © {new Date().getFullYear()} 复旦健身社互助预约平台 · 学生社团内部使用 · MVP Demo
+        </p>
       </div>
     </footer>
   );
