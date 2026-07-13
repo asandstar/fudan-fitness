@@ -203,8 +203,9 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-text-tertiary mt-4">
-          平台仅供复旦健身社内部使用 · 不做真实校园认证
+        <p className="text-center text-[11px] text-text-tertiary mt-4 leading-relaxed">
+          当前为 Demo 环境，请使用页面提供的演示账号，不要输入真实密码或敏感个人信息。
+          平台仅供复旦健身社内部使用 · 不做真实校园认证。
         </p>
       </div>
 
