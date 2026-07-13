@@ -85,7 +85,7 @@ const HIGHLIGHTS = [
   { icon: Award, title: '专业认证教练', desc: '所有教练经严格认证审核,平均带练经验2年以上', color: 'primary' },
   { icon: MapPin, title: '全覆盖6大校区', desc: '邯郸南区/北区、五六教工会、江湾、枫林、张江', color: 'info' },
   { icon: Shield, title: '科学训练体系', desc: '参考中国体育科学学会+国际权威标准,动作规范优先', color: 'success' },
-  { icon: Users, title: '社团互助氛围', desc: '学生互助带练,零基础友好,无门槛参与', color: 'accent' },
+  { icon: Users, title: '爱好者互助氛围', desc: '学生互助带练,零基础友好,无门槛参与', color: 'accent' },
 ];
 
 const QUICK_LINKS = [
@@ -201,7 +201,7 @@ const FAQS = [
   },
   {
     q: '预约带练需要收费吗？',
-    a: '本社为校内学生互助社团，带练服务完全免费。只需遵守预约规则，珍惜教练时间即可。',
+    a: '本平台为校内健身爱好者互助项目，带练服务完全免费。只需遵守预约规则，珍惜教练时间即可。',
   },
   {
     q: '临时有事不能去训练，怎么取消？',
@@ -259,10 +259,10 @@ export default function HomePage() {
         <div className="relative max-w-content mx-auto px-6 py-20 md:py-28">
           <div className="max-w-2xl text-white relative z-10">
             <span className="badge bg-primary/90 text-white mb-4 inline-flex items-center gap-1">
-              <Sparkles size={12} /> 互助带练 · 学生社团
+              <Sparkles size={12} /> 互助带练 · 健身爱好者
             </span>
             <h1 className="text-3xl md:text-4xl font-bold leading-tight mb-4">
-              复旦健身社<br />互助预约平台
+              复旦健身爱好者<br />互助平台
             </h1>
             <p className="text-base md:text-lg text-white/85 mb-6 leading-relaxed">
               连接学员与认证教练,1 对 1 带练预约。零基础友好、女生友好,
@@ -645,16 +645,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 13. 关于社团 */}
+      {/* 13. 关于平台 */}
       <section className="max-w-content mx-auto px-6 py-10">
         <div className="card p-8 text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center mx-auto mb-4">
             <Dumbbell size={32} />
           </div>
-          <h2 className="text-2xl font-bold text-text-primary mb-3">复旦健身社</h2>
+          <h2 className="text-2xl font-bold text-text-primary mb-3">复旦健身爱好者互助平台</h2>
           <p className="text-sm text-text-secondary max-w-2xl mx-auto leading-relaxed mb-6">
-            复旦大学学生自发组织的健身互助社团,致力于为社员提供科学的训练指导、
-            安全的进阶路径和友好的训练氛围。平台由社团内部维护,所有教练均经过认证审核。
+            复旦大学学生健身爱好者自发组织的互助项目,致力于为参与者提供科学的训练指导、
+            安全的进阶路径和友好的训练氛围。平台由爱好者社区维护,所有教练均经过认证审核。
           </p>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-text-secondary">
             <span className="flex items-center gap-2"><Clock size={14} /> 周一至周日 08:00-22:00</span>

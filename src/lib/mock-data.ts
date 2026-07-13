@@ -142,7 +142,7 @@ export const mockUsers: User[] = [
     studentId: '00000000000',
     password: 'admin123',
     name: '平台管理员',
-    department: '社团联合会',
+    department: '健身爱好者社区',
     grade: '—',
     role: 'admin',
     violationCount: 0,
